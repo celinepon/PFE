@@ -1,6 +1,7 @@
 function interface
 clear all
 close all
+
 clc
 
 %% Create GUI structure
@@ -9,7 +10,13 @@ xmiddle = scrn_size(3) / 2;
 ymiddle = scrn_size(4) / 2;
 sizex = 1250;
 sizey = 850;
-
+        'Name', 'Fenetrage des signaux VisuResp et Biopac', ...
+        'Visible', 'on', ...
+        'Position', [xmiddle - (sizex / 2), ymiddle - (sizey / 2), sizex, sizey], ...
+        'NumberTitle', 'Off' ...
+        );
+    
+    %%%%%%%%%%%%%%%%
 f = figure( ...
     'Name', 'Fenetrage des signaux VisuResp et Biopac', ...
     'Visible', 'on', ...
@@ -28,6 +35,7 @@ f = figure( ...
 widthsignal = 825;
 heightsignal = 325;
 
+
 % creation of the panel that display the 4 waves and the information
 % relative to the signal such as the starting time, ending time and he
 % exportation
@@ -43,7 +51,9 @@ psignalBthorax = uipanel( ...
     'Title', 'Signal Biopac Thorax', ...
     'Units', 'Pixels', ...
     'Fontsize', 9, ...
+
     'Position', [5, 170, 800, 140] ...
+
     );
 psignalBabdo = uipanel( ...
     'Parent', psignalB, ...
@@ -78,6 +88,7 @@ psignalAabdo = uipanel( ...
 
 
 % signal screen
+
 %Graph signal B thorax
 axe_signal_B_Thorax = axes( ...
     'Parent', psignalBthorax, ...
@@ -135,14 +146,14 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-%affiche les fichiers présents dans le dossier selectionné
+%affiche les fichiers prÃ©sents dans le dossier selectionnÃ©
 listedossier = uicontrol('Parent',prepertoire,'Style','listbox','String','fichier','Position',[23 110 300 300],'Callback',{@filelist_callback});
 selectdossierBiopac = uicontrol('Parent',prepertoire,'Style','pushbutton','FontSize',12,'String','Selectionner un dossier Biopac','Position',[50 415 250 40],'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac','Callback',{@selectdir_callback});
 
 selectfichierVisurep = uicontrol('Parent',prepertoire,'Style','pushbutton','FontSize',12,'String','Selectionner un fichier Visuresp','Position',[53 50 250 40],'ToolTipString', 'Selectionnez un fichier de type .rcg sortant de Visuresp','Callback',{@selectfile_callback});
 cheminfichierVisuresp = uicontrol('Parent',prepertoire,'Style','text','FontSize',12,'String',' ','Position',[10 13 330 27],'BackgroundColor','w');
 
-% Trouver corrélation 
+% Trouver corrÃ©lation 
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -152,12 +163,12 @@ pcorrelation = uipanel( ...
     );
 
 lancercorrelation = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Trouver correlation','Position',[10 50 200 40],'Callback',{@null}); %appeler fonction correlation
-suivant = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Suivant','Position',[450 50 150 40],'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possèdant un coefficient de corrélation plus faible','Callback',{@null}); %appeler fonction pour avoir la corrélation suivante
-precedent = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Précédent','Position',[250 50 150 40],'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possèdant un coefficient de corrélation plus élevé','Callback',{@null}); %appeler fonction pour avoir correlation précédente
-valider = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Valider','Position',[650 50 150 40],'ToolTipString', 'Validation de la correspondance entre les séquences Visuresp et Biopac','Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
+suivant = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Suivant','Position',[450 50 150 40],'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possÃ¨dant un coefficient de corrÃ©lation plus faible','Callback',{@null}); %appeler fonction pour avoir la corrÃ©lation suivante
+precedent = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','PrÃ©cÃ©dent','Position',[250 50 150 40],'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possÃ¨dant un coefficient de corrÃ©lation plus Ã©levÃ©','Callback',{@null}); %appeler fonction pour avoir correlation prÃ©cÃ©dente
+valider = uicontrol('Parent',pcorrelation,'Style','pushbutton','FontSize',12,'String','Valider','Position',[650 50 150 40],'ToolTipString', 'Validation de la correspondance entre les sÃ©quences Visuresp et Biopac','Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
 
-% valeurs de corrélation obtenues 
+% valeurs de corrÃ©lation obtenues 
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -176,7 +187,7 @@ corr_abdo_valeur = uicontrol('Parent',pvaleur,'Style','text','FontSize',12,'Stri
 %  filename = [];
 
 
-%fonctions appelées dans le code précédent 
+%fonctions appelÃ©es dans le code prÃ©cÃ©dent 
 
 %% Liste contenant tous les fichiers du repertorie
     function filelist_callback(source,eventdata)
@@ -191,7 +202,7 @@ function selectdir_callback(source,eventdata)
     dir_name = uigetdir;
     if dir_name ~= 0
         handles.dir = dir_name;
-        search_name = [dir_name,'/*.m']; %attention au format du fichier ! à changer en .mat pour lire les vraies données
+        search_name = [dir_name,'/*.m']; %attention au format du fichier ! Ã  changer en .mat pour lire les vraies donnÃ©es
         files = struct2cell(dir(search_name));
         handles.file_list = files(1,:)'
         set(listedossier,'String', handles.file_list)
@@ -222,8 +233,8 @@ function selectfile_callback(source,eventdata)
     end
 end
 
-%Affichage des données sur les différents graphiques. 
-%Initialisation des lignes pour afficher les données sur les graphiques 
+%Affichage des donnÃ©es sur les diffÃ©rents graphiques. 
+%Initialisation des lignes pour afficher les donnÃ©es sur les graphiques 
 line_signalA_Thorax = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
 line_signlaA_Abdo= line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
 line_signalB_Thorax = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_B_Thorax);
@@ -231,7 +242,7 @@ line_signalB_Abdo = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_s
 
 % %a mettre dans une fonction ! 
 %     function 
-% %Modification des graphique en fonction des données selectionnées
+% %Modification des graphique en fonction des donnÃ©es selectionnÃ©es
 % set( line_signalA_Thorax, 'XData',  time, 'YData', squeeze( analog1(:, :)))
 % set( line_signlaA_Abdo, 'XData',  time, 'YData', squeeze( analog1(:, :)))
 % set( line_signalB_Thorax, 'XData',  time, 'YData', squeeze( analog1(:, :)))
@@ -240,3 +251,4 @@ line_signalB_Abdo = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_s
 
 
 end 
+
