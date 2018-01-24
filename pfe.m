@@ -3,6 +3,7 @@ clear all
 clc
 
 %% Ouvrir ficher .txt LabChart
+
 filename_L = '../C2_17_05_2016.txt';
 delimiterIn_L = '\t';
 headerlinesIn_L= 5;
@@ -15,6 +16,7 @@ debit_L=fichierLabChart.data(1:length(fichierLabChart.data),4);
 longueur_signal_L=length(thorax_L);
 
 %affichage
+
 freq_L=40;
 t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
 plot(t_L,thorax_L')
@@ -63,9 +65,10 @@ end
 % plot(xq,res);
 % longueur_signal_L=length(res);
 
-% %ré-echantillonnage
+% %rï¿½-echantillonnage
 % freq_L=20000;
 % res=res(0:1/freq_L:end);
 % t=0:1/freq_L:(longueur_signal_L/freq_L)-1/freq_L;
 % figure;
 % plot(res)
+
