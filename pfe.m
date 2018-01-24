@@ -16,7 +16,7 @@ longueur_signal_L=length(thorax_L);
 
 %affichage
 freq_L=40;
-t_L=0:1/freq_L:(longueur_signal_L/freq_L)-1/freq_L;
+t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
 plot(t_L,thorax_L')
 
 % %% Ouvrir fichier .rcg VisuResp
@@ -40,18 +40,32 @@ plot(t_L,thorax_L')
 %sur-echantillonnage
 
 x = t_L; 
-v =thorax_L';
-freq_L=40;
-t_L2=0:1/freq_L:(longueur_signal_L/freq_L)-1/freq_L;
+v =thorax_L;
+freq_test=40;
+t_L2=0:1/2000:(longueur_signal_L/freq_test-1/freq_test);
 xq =t_L2;
 
 methode={'nearest';'next';'previous';'linear';'spline';'pchip'};
-for i=1:6
+for i=1:1
 figure
-methode{i}
 vq1 = interp1(x,v,xq,methode{i});
 plot(x,v,'o',xq,vq1,':.');
-xlim([0 (longueur_signal_L/freq_L)-1/freq_L]);
+% xlim([0 (longueur_signal_L/freq_L)-1/freq_L]);
 title('(Default) Linear Interpolation');
 end
 
+%reconstruction du signal par interpolation avec la fonction sinus cardinal
+% h = waitbar(0, 'Wait please ...');
+% s=sinc(xq)
+% waitbar(1)
+% figure
+% res= conv(v,s)
+% plot(xq,res);
+% longueur_signal_L=length(res);
+
+% %ré-echantillonnage
+% freq_L=20000;
+% res=res(0:1/freq_L:end);
+% t=0:1/freq_L:(longueur_signal_L/freq_L)-1/freq_L;
+% figure;
+% plot(res)
