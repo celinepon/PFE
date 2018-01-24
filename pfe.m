@@ -46,11 +46,11 @@ t_L2=0:1/2000:(longueur_signal_L/freq_test-1/freq_test);
 xq =t_L2;
 
 methode={'nearest';'next';'previous';'linear';'spline';'pchip'};
-for i=1:1
+for i=1:6
 figure
 vq1 = interp1(x,v,xq,methode{i});
 plot(x,v,'o',xq,vq1,':.');
-% xlim([0 (longueur_signal_L/freq_L)-1/freq_L]);
+xlim([0 (longueur_signal_L/freq_L)-1/freq_L]);
 title('(Default) Linear Interpolation');
 end
 
