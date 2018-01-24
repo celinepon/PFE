@@ -3,7 +3,7 @@ clear all
 clc
 
 %% Ouvrir ficher .txt LabChart
-filename_L = '../C2_17_05_2016.txt';
+filename_L = '../C1_17_05_2016.txt';
 delimiterIn_L = '\t';
 headerlinesIn_L= 5;
 
@@ -41,17 +41,18 @@ plot(t_L,thorax_L')
 
 x = t_L; 
 v =thorax_L';
-freq_L=40;
+freq_L=20000;
 t_L2=0:1/freq_L:(longueur_signal_L/freq_L)-1/freq_L;
 xq =t_L2;
 
-methode={'nearest';'next';'previous';'linear';'spline';'pchip'};
-for i=1:6
+Interpolate the function at the query points and plot the result. 
+
+
+
 figure
-methode{i}
-vq1 = interp1(x,v,xq,methode{i});
+vq1 = interp1(x,v,xq);
 plot(x,v,'o',xq,vq1,':.');
-xlim([0 (longueur_signal_L/freq_L)-1/freq_L]);
+xlim([0 2*pi]);
 title('(Default) Linear Interpolation');
-end
+
 
