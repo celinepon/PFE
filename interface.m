@@ -104,6 +104,7 @@ pvaleur = uipanel( ...
     );
 
 %%%%%%%%%%%%%%%%%%%%% Axes des grapghes
+
 %Graph signal B thorax
 axe_signal_B_Thorax = axes( ...
     'Parent', psignalBthorax, ...
@@ -188,10 +189,11 @@ selectfichierVisurep = uicontrol(...
 OK = uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
-    'FontSize',12,...
+    'FontSize',9,...
     'String','OK',...
-    'Position',[110 120 150 40],...
+    'Position',[110 110 150 40],...
     'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
+    'enable','off',...
     'Callback',{@afficherGraph});
 
 cheminfichierVisuresp = uicontrol(...
@@ -209,7 +211,8 @@ lancercorrelation = uicontrol(...
 'FontSize',9,...
 'String','Trouver correlation',...
 'Position',[20 10 180 40],...
-'Callback',{@null}); %appeler fonction correlation
+    'enable','off',...
+'Callback',{@calcul_correlation}); %appeler fonction correlation
 
 suivant = uicontrol(...
     'Parent',pcorrelation,...
@@ -217,6 +220,7 @@ suivant = uicontrol(...
     'FontSize',9,...
     'String','Suivant',...
     'Position',[480 10 100 40],...
+        'enable','off',...
     'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possèdant un coefficient de corrélation plus faible',...
     'Callback',{@null}); %appeler fonction pour avoir la corrélation suivante
 
@@ -226,6 +230,7 @@ precedent = uicontrol(...
     'FontSize',9,...
     'String','Precedent',...
     'Position',[280 10 100 40],...
+        'enable','off',...
     'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possèdant un coefficient de corrélation plus élevé',...
     'Callback',{@null}); %appeler fonction pour avoir correlation précédente
 
@@ -235,6 +240,7 @@ valider = uicontrol(...
     'FontSize',9,...
     'String','Valider',...
     'Position',[680 10 100 40],...
+        'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les séquences Visuresp et Biopac',...
     'Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
@@ -266,7 +272,9 @@ corr_abdo_valeur = uicontrol(...
     'String',' ',...
     'Position',[180 255 120 25]);
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
+
 %Affichage des données sur les différents graphiques. 
 %Initialisation des lignes pour afficher les données sur les graphiques 
 line_signalA_Thorax = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
@@ -278,8 +286,14 @@ line_signalB_Abdo = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_s
 handles.dir='';
 handles.file_list='';
 handles.filename='';
-
-
+thorax_L=-1;
+thorax_C=-1;
+abdomen_L=-1;
+abdomen_C=-1;
+fenetre_thorax=-1;
+fenetre_abdo=-1;
+ r_thorax(:)=-1;
+r_abdo(:)=-1;
 %fonctions appelees dans le code precedent 
 
 %% Liste contenant tous les fichiers du repertorie
@@ -297,9 +311,10 @@ function selectdir_callback(source,eventdata)
         handles.dir = dir_name;
         search_name = [dir_name,'/*.txt']; %attention au format du fichier ! à changer en .mat pour lire les vraies donnees
         files = struct2cell(dir(search_name));
-        handles.file_list = files(1,:)'
-        set(listedossier,'String', handles.file_list)
+        handles.file_list = files(1,:)';
+        set(listedossier,'String', handles.file_list);
         handles.filename = char(handles.file_list(1));
+        set(OK,'Enable','on')
     end
 end
 
@@ -308,7 +323,7 @@ function selectfile_callback(source,eventdata)
     [file_name, pathName] = uigetfile;
     if file_name ~= 0
          file = file_name;
-         chemin = strcat(pathName,file_name)
+         chemin = strcat(pathName,file_name);
          set(cheminfichierVisuresp,'String', file)
 %          filename2 = char( file)
          
@@ -327,12 +342,15 @@ function selectfile_callback(source,eventdata)
          set(line_signalA_Thorax, 'XData',  t_C, 'YData', thorax_C)
          set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
     end
+if length(thorax_L)>2 & length(thorax_C)>2
+    set(lancercorrelation,'enable','on');
+end
 end
 
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok 
 function afficherGraph(source, eventdata)
-    filename_L = [handles.dir, '\', handles.filename]
+    filename_L = [handles.dir, '\', handles.filename];
     delimiterIn_L = '\t';
     headerlinesIn_L= 5;
     fichierLabChart= importdata(filename_L,delimiterIn_L,headerlinesIn_L);
@@ -347,9 +365,33 @@ function afficherGraph(source, eventdata)
     set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
     set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
 
-
+if  length(thorax_L)>2 & length(thorax_C)>2
+    set(lancercorrelation,'enable','on');
+end
 end 
 
+%% Correlation
+
+    function calcul_correlation(source,eventdata)
+       
+        for k=1:length(thorax_C)-length(thorax_L)-1
+            r_thorax(k)=xcorr(thorax_L,thorax_C(k:length(thorax_L+k)))
+            r_abdo(k)=xcorr(abdomen_L,abdomen_C(k:length(abdomen_L+k)))
+        end
+        
+        [val_thorax,ind_thorax]=max(r_thorax);
+        fenetre_thorax=ind_thorax:ind_thorax+length(thorax_L);
+        set(corr_thorax_valeur,'String',val_thorax)
+%         set(axe_signal_A_Thorax,'Xlim',fenetre_thorax)
+        
+        [val_abdo,ind_abdo]=max(r_abdo);
+        fenetre_abdo=ind_abdo:ind_abdo+length(abdomen_L);
+        set(corr_abdo_valeur,'String',val_abdo)
+        
+        set(suivant,'enable','on');
+        set(precedent,'enable','on');
+        set(valider,'enable','on');
+    end
 
 end 
 
