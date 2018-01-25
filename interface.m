@@ -185,6 +185,15 @@ selectfichierVisurep = uicontrol(...
     'ToolTipString', 'Selectionnez un fichier de type .rcg sortant de Visuresp',...
     'Callback',{@selectfile_callback});
 
+OK = uicontrol(...
+    'Parent',prepertoire,...
+    'Style','pushbutton',...
+    'FontSize',12,...
+    'String','OK',...
+    'Position',[110 120 150 40],...
+    'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
+    'Callback',{@afficherGraph});
+
 cheminfichierVisuresp = uicontrol(...
     'Parent',prepertoire,...
     'Style','text',...
@@ -265,19 +274,20 @@ line_signlaA_Abdo= line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_si
 line_signalB_Thorax = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_B_Thorax);
 line_signalB_Abdo = line(0, 0, 'Color', 'black', 'LineWidth', 1, 'Parent', axe_signal_B_Abdo);
 
-% Intenciation des handles
-%  filename = [];
+
+handles.dir='';
+handles.file_list='';
+handles.filename='';
 
 
-%fonctions appelées dans le code précédent 
+%fonctions appelees dans le code precedent 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Functions
 %% Liste contenant tous les fichiers du repertorie
     function filelist_callback(source,eventdata)
         str = get(source, 'String');
         val = get(source,'Value');
         file = char(str(val));
-         filename = file;
+        handles.filename = file;
     end
 
 %% Selection du dossier contenant les enregistrements Biopac
@@ -285,7 +295,7 @@ function selectdir_callback(source,eventdata)
     dir_name = uigetdir;
     if dir_name ~= 0
         handles.dir = dir_name;
-        search_name = [dir_name,'/*.m']; %attention au format du fichier ! à changer en .mat pour lire les vraies données
+        search_name = [dir_name,'/*.txt']; %attention au format du fichier ! à changer en .mat pour lire les vraies donnees
         files = struct2cell(dir(search_name));
         handles.file_list = files(1,:)'
         set(listedossier,'String', handles.file_list)
@@ -293,38 +303,52 @@ function selectdir_callback(source,eventdata)
     end
 end
 
-%    function selectdir_callback(source,eventdata)
-%         dir_name = uigetdir;
-%         if dir_name ~= 0
-%             handles.dir = dir_name;
-%             search_name = [dir_name,'/*.rsh'];
-%             files = struct2cell(dir(search_name));
-%             handles.file_list = files(1,:)';
-%             set(filelist,'String',handles.file_list)
-%             handles.filename = char(handles.file_list(1));
-%             %enable the refresh directory and load file buttons
-%             set([loadfile,refreshdir],'Enable','on')
-%         end
-%     end
 %% Selection du fichier contenant l'enregistrement continu de Visuresp
 function selectfile_callback(source,eventdata)
-    file_name = uigetfile;
+    [file_name, pathName] = uigetfile;
     if file_name ~= 0
          file = file_name;
+         chemin = strcat(pathName,file_name)
          set(cheminfichierVisuresp,'String', file)
-         filename2 = char( file);
+%          filename2 = char( file)
+         
+%          filename_L = [handles.dir, '\', handles.filename]
+         delimiterIn_C = '\t';
+         headerlinesIn_C = 38;
+
+         fichierComplet=importdata(chemin,delimiterIn_C,headerlinesIn_C);
+         thorax_C=fichierComplet.data(1:length(fichierComplet.data),1);
+         abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
+         longueur_signal_C=length(thorax_C);
+        %affichage
+         freq_C=40; %� changer si sur-echantillonnage du signal
+         t_C=0:1/freq_C:(longueur_signal_C/freq_C)-1/freq_C;
+
+         set(line_signalA_Thorax, 'XData',  t_C, 'YData', thorax_C)
+         set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
     end
 end
 
+%permet d'afficher sur les graphiques les enregistrements du signal b
+%(biopac) en appuyant sur Ok 
+function afficherGraph(source, eventdata)
+    filename_L = [handles.dir, '\', handles.filename]
+    delimiterIn_L = '\t';
+    headerlinesIn_L= 5;
+    fichierLabChart= importdata(filename_L,delimiterIn_L,headerlinesIn_L);
+    thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),1);
+    abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),2);
+    longueur_signal_L=length(thorax_L);
 
-% %a mettre dans une fonction ! 
-%     function 
-% %Modification des graphique en fonction des données selectionnées
-% set( line_signalA_Thorax, 'XData',  time, 'YData', squeeze( analog1(:, :)))
-% set( line_signlaA_Abdo, 'XData',  time, 'YData', squeeze( analog1(:, :)))
-% set( line_signalB_Thorax, 'XData',  time, 'YData', squeeze( analog1(:, :)))
-% set( line_signalB_Abdo, 'XData',  time, 'YData', squeeze( analog1(:, :)))
+    %affichage
+    freq_L=20000;
+    t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
+    
+    set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
+    set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
 
+
+end 
 
 
 end 
