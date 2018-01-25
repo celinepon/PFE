@@ -308,11 +308,8 @@ function selectfile_callback(source,eventdata)
     [file_name, pathName] = uigetfile;
     if file_name ~= 0
          file = file_name;
-         chemin = strcat(pathName,file_name)
+         chemin = strcat(pathName,file_name);
          set(cheminfichierVisuresp,'String', file)
-%          filename2 = char( file)
-         
-%          filename_L = [handles.dir, '\', handles.filename]
          delimiterIn_C = '\t';
          headerlinesIn_C = 38;
 
@@ -320,19 +317,25 @@ function selectfile_callback(source,eventdata)
          thorax_C=fichierComplet.data(1:length(fichierComplet.data),1);
          abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
          longueur_signal_C=length(thorax_C);
-        %affichage
-         freq_C=40; %à changer si sur-echantillonnage du signal
+       
+         %affichage
+         freq_C=40; %a changer si sur-echantillonnage du signal
          t_C=0:1/freq_C:(longueur_signal_C/freq_C)-1/freq_C;
-
+         mintemps = min(t_C)
+         maxtemps = max(t_C)
          set(line_signalA_Thorax, 'XData',  t_C, 'YData', thorax_C)
          set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
+         set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
+         set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)]) 
+
+
     end
 end
 
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok 
 function afficherGraph(source, eventdata)
-    filename_L = [handles.dir, '\', handles.filename]
+    filename_L = [handles.dir, '\', handles.filename];
     delimiterIn_L = '\t';
     headerlinesIn_L= 5;
     fichierLabChart= importdata(filename_L,delimiterIn_L,headerlinesIn_L);
@@ -346,7 +349,8 @@ function afficherGraph(source, eventdata)
     
     set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
     set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
-
+    set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
+    set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
 
 end 
 
