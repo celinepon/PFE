@@ -1,7 +1,6 @@
 function interface
 clear all
 close all
-
 clc
 
 %% Create GUI structure
@@ -86,7 +85,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver corrÃ©lation
+% Trouver corrÃƒÂ©lation
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -94,7 +93,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, 825, 70] ...
     );
-% valeurs de corrÃ©lation obtenues
+% valeurs de corrÃƒÂ©lation obtenues
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -237,8 +236,9 @@ suivant = uicontrol(...
     'String','Suivant',...
     'Position',[480 10 100 40],...
     'enable','off',...
-    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possedant un coefficient de correlation plus faible',...
+'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possedant un coefficient de correlation plus faible',...
     'Callback',{@null}); %appeler fonction pour avoir la correlation suivante
+
 
 precedent = uicontrol(...
     'Parent',pcorrelation,...
@@ -250,6 +250,7 @@ precedent = uicontrol(...
     'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possedant un coefficient de correlation plus eleve',...
     'Callback',{@null}); %appeler fonction pour avoir correlation precedente
 
+
 valider = uicontrol(...
     'Parent',pcorrelation,...
     'Style','pushbutton',...
@@ -258,6 +259,7 @@ valider = uicontrol(...
     'Position',[680 10 100 40],...
     'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les sequences Visuresp et Biopac',...
+
     'Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
 corr_thorax_text = uicontrol(...
@@ -323,16 +325,19 @@ freqechA = uicontrol(...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
 
+
 %Affichage des donnees sur les differents graphiques.
 %Initialisation des lignes pour afficher les donnees sur les graphiques
+
+orange=[255 128 0]/255;
+bleu_clair=[51 203 255]/255;
 line_signalA_Thorax = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
 line_signalA_Abdo= line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
-
+line_signalB_Thorax = line(0, 0, 'Color', bleu_clair, 'LineWidth', 1, 'Parent', axe_signal_B_Thorax);
+line_signalB_Abdo = line(0, 0, 'Color', orange, 'LineWidth', 1, 'Parent', axe_signal_B_Abdo);
 line_signalA_Thorax_super = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
 line_signalA_Abdo_super= line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
 
-line_signalB_Thorax = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_signal_B_Thorax);
-line_signalB_Abdo = line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_signal_B_Abdo);
 
 line_corr_Thorax = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_corr);
 line_corr_Abdo = line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_corr);
@@ -349,12 +354,13 @@ fenetre_thorax=-1;
 fenetre_abdo=-1;
 r_thorax(:)=-1;
 r_abdo(:)=-1;
+
 freq_C='';
 freq_L='';
 %fonctions appelees dans le code precedent
 
 %% Liste contenant tous les fichiers du repertorie
-    function filelist_callback(source,eventdata)
+    function filelist_callback(source,~)
         str = get(source, 'String');
         val = get(source,'Value');
         file = char(str(val));
@@ -362,13 +368,16 @@ freq_L='';
     end
 
 %% Selection du dossier contenant les enregistrements Biopac
-    function selectdir_callback(source,eventdata)
-        dir_name = uigetdir;
+
+    function selectdir_callback(~,~)
+        dir_name = uigetdir('','Selectionner un dossier de fichier .mat ou .rcg');
         if dir_name ~= 0
             handles.dir = dir_name;
-            search_name = [dir_name,'/*.mat']; %attention au format du fichier ! Ã  changer en .mat pour lire les vraies donnees
+            search_name = [dir_name,'/*.mat'];
+            search_name2=[dir_name,'/*.rcg'] ;
             files = struct2cell(dir(search_name));
-            handles.file_list = files(1,:)';
+            files2=struct2cell(dir(search_name2));
+            handles.file_list = [files(1,:),files2(1,:)]';
             set(listedossier,'String', handles.file_list);
             handles.filename = char(handles.file_list(1));
             set(OK,'Enable','on')
@@ -376,64 +385,113 @@ freq_L='';
     end
 
 %% Selection du fichier contenant l'enregistrement continu de Visuresp
-    function selectfile_callback(source,eventdata)
-        [file_name, pathName] = uigetfile;
+
+    function selectfile_callback(~,~)
+        [file_name, pathName] = uigetfile({'*.*';'*.mat';'*.rcg'},'Selectionner un fichier VisuResp .mat ou .rcg');
+        thorax_C=-1;
+        abdomen_C=-1;
         if file_name ~= 0
             file = file_name;
             chemin = strcat(pathName,file_name);
             set(cheminfichierVisuresp,'String', file)
-            
-            fichierComplet=importdata(chemin);
-            thorax_C=fichierComplet.THO(1:length(fichierComplet.THO));
-            abdomen_C=fichierComplet.ABD(1:length(fichierComplet.ABD));
-            
+
+            [~, ~, extension] = fileparts(file);
+            if extension == '.mat'
+                fichierComplet=importdata(chemin);
+                if isfield(fichierComplet,'THO')
+                    thorax_C=fichierComplet.THO(1:length(fichierComplet.THO));
+                    abdomen_C=fichierComplet.ABD(1:length(fichierComplet.ABD));
+                elseif isfield(fichierComplet,'data')
+                    thorax_C=fichierComplet.data(1:length(fichierComplet.data),3);
+                    abdomen_C=fichierComplet.data(1:length(fichierComplet.data),4);
+                else
+                    msgbox('Le contenu de ce fichier .mat n"est pas structure de façon adequate (data.data) ', 'Title', 'help')
+                end
+            elseif extension == '.rcg'
+                delimiterIn_C = '\t';
+                headerlinesIn_C = 38;
+                fichierComplet=importdata(chemin,delimiterIn_C,headerlinesIn_C);
+                thorax_C=fichierComplet.data(1:length(fichierComplet.data),1);
+                abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
+                
+            else
+                msgbox('Le format de fichier n"est pas supporté, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+            end
             longueur_signal_C=length(thorax_C);
             
             %affichage
-            freq=get(freqVisu,'string')
-            freq_C=str2num(freq)
-            %freq_C=str2num(freqVisu) %a changer si sur-echantillonnage du signal
+            freq_C=40; %a changer si sur-echantillonnage du signal
             t_C=0:1/freq_C:(longueur_signal_C/freq_C)-1/freq_C;
-            mintemps = min(t_C)
-            maxtemps = max(t_C)
             set(line_signalA_Thorax, 'XData',  t_C, 'YData', thorax_C)
             set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
             set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
             set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
-            
-            
+
+            axe_signal_A_Thorax.XAxis.TickValuesMode ='auto';
+            axe_signal_A_Abdo.XAxis.TickValuesMode ='auto';
+            axe_signal_A_Thorax.YAxis.TickValuesMode ='auto';
+            axe_signal_A_Abdo.YAxis.TickValuesMode ='auto';
+
         end
         if length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
     end
 
-    function afficherGraph(source, eventdata)
+
+%permet d'afficher sur les graphiques les enregistrements du signal b
+%(biopac) en appuyant sur Ok
+    function afficherGraph(~, ~)
+        thorax_L=-1;
+        abdomen_L=-1;
+        
         filename_L = [handles.dir, '\', handles.filename];
         fichierLabChart= importdata(filename_L);
-        thorax_L=fichierLabChart.THOd(1:length(fichierLabChart.THOd));
-        abdomen_L=fichierLabChart.ABDd(1:length(fichierLabChart.ABDd));
         
+        [~, ~, extension] = fileparts(handles.filename);
+        if extension == '.mat'
+            fichierLabChart=importdata(filename_L);
+            if isfield(fichierLabChart,'THOd')
+                thorax_L=fichierLabChart.THOd(1:length(fichierLabChart.THOd));
+                abdomen_L=fichierLabChart.ABDd(1:length(fichierLabChart.ABDd));
+            elseif isfield(fichierLabChart,'data')
+                thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),3);
+                abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),4);
+            else
+                msgbox('Le contenu de ce fichier .mat n"est pas structure de façon adequate (data.data) ', 'Title', 'help')
+            end
+        elseif extension == '.rcg'
+            delimiterIn_C = '\t';
+            headerlinesIn_C = 38;
+            fichierLabChart=importdata(filename_L,delimiterIn_C,headerlinesIn_C);
+            thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),1);
+            abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),2);
+            
+        else
+            msgbox('Le format de fichier n"est pas supporté, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+        end
         longueur_signal_L=length(thorax_L);
         
         %affichage
-        freq_L=str2num(get(freqLab,'string'))
+        
+        freq_L=20000;
+
         t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
         
         set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
         set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
-        
         set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
         set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
-        
-        
-        
+        axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
+        axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
+        axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
+        axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
+
         if  length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
         
     end
-
 
 %permet d'afficher sur les graphiques les enregistrements du signal A
 %(visresp) en appuyant modifiant la Fech
@@ -457,6 +515,7 @@ freq_L='';
 %% Intercorrelation
 
     function calcul_correlation(source,eventdata)
+
         r_thorax_zone1='';
         r_abdo_zone1='';
         
@@ -499,6 +558,7 @@ freq_L='';
             r_thorax_zone3{k}=xcorr(thoL_zone3,thorax_C(k:length(thoL_zone3+k)));
             r_abdo_zone3{k}=xcorr(abdoL_zone3,abdomen_C(k:length(abdoL_zone3+k)));
             
+
             if k==1
                 inter_tho_zone1=r_thorax_zone1{1};
                 inter_abdo_zone1=r_abdo_zone1{1};
@@ -588,6 +648,7 @@ freq_L='';
                 
             end
         end
+
         
         set(line_signalA_Thorax_super, 'XData', fenetre, 'YData', thorax_L)
         set(line_signalA_Abdo_super, 'XData', fenetre, 'YData', abdomen_L)
