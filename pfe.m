@@ -25,7 +25,6 @@ t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
 filename_C= '../txt/C2_17_05_2016_SSET.mat';
 delimiterIn_C = '\t';
 headerlinesIn_C = 38;
-
 fichierComplet=importdata(filename_C,delimiterIn_C,headerlinesIn_C);
 thorax_C=fichierComplet.THO(1:length(fichierComplet.THO));
 abdomen_C=fichierComplet.ABD(1:length(fichierComplet.THO));
