@@ -86,7 +86,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver corrélation 
+% Trouver corrÃ©lation 
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -94,7 +94,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, 825, 70] ...
     );
-% valeurs de corrélation obtenues 
+% valeurs de corrÃ©lation obtenues 
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -104,6 +104,7 @@ pvaleur = uipanel( ...
     );
 
 %%%%%%%%%%%%%%%%%%%%% Axes des grapghes
+
 %Graph signal B thorax
 axe_signal_B_Thorax = axes( ...
     'Parent', psignalBthorax, ...
@@ -204,10 +205,11 @@ selectfichierVisurep = uicontrol(...
 OK = uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
-    'FontSize',12,...
+    'FontSize',9,...
     'String','OK',...
-    'Position',[110 120 150 40],...
+    'Position',[110 110 150 40],...
     'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
+    'enable','off',...
     'Callback',{@afficherGraph});
 
 cheminfichierVisuresp = uicontrol(...
@@ -225,7 +227,8 @@ lancercorrelation = uicontrol(...
 'FontSize',9,...
 'String','Trouver correlation',...
 'Position',[20 10 180 40],...
-'Callback',{@null}); %appeler fonction correlation
+    'enable','off',...
+'Callback',{@calcul_correlation}); %appeler fonction correlation
 
 suivant = uicontrol(...
     'Parent',pcorrelation,...
@@ -233,8 +236,9 @@ suivant = uicontrol(...
     'FontSize',9,...
     'String','Suivant',...
     'Position',[480 10 100 40],...
-    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possèdant un coefficient de corrélation plus faible',...
-    'Callback',{@null}); %appeler fonction pour avoir la corrélation suivante
+        'enable','off',...
+    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possÃ¨dant un coefficient de corrÃ©lation plus faible',...
+    'Callback',{@null}); %appeler fonction pour avoir la corrÃ©lation suivante
 
 precedent = uicontrol(...
     'Parent',pcorrelation,...
@@ -242,8 +246,9 @@ precedent = uicontrol(...
     'FontSize',9,...
     'String','Precedent',...
     'Position',[280 10 100 40],...
-    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possèdant un coefficient de corrélation plus élevé',...
-    'Callback',{@null}); %appeler fonction pour avoir correlation précédente
+        'enable','off',...
+    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possÃ¨dant un coefficient de corrÃ©lation plus Ã©levÃ©',...
+    'Callback',{@null}); %appeler fonction pour avoir correlation prÃ©cÃ©dente
 
 valider = uicontrol(...
     'Parent',pcorrelation,...
@@ -251,7 +256,8 @@ valider = uicontrol(...
     'FontSize',9,...
     'String','Valider',...
     'Position',[680 10 100 40],...
-    'ToolTipString', 'Validation de la correspondance entre les séquences Visuresp et Biopac',...
+        'enable','off',...
+    'ToolTipString', 'Validation de la correspondance entre les sÃ©quences Visuresp et Biopac',...
     'Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
 corr_thorax_text = uicontrol(...
@@ -282,6 +288,7 @@ corr_abdo_valeur = uicontrol(...
     'String',' ',...
     'Position',[180 255 120 25]);
 
+
 freqLab = uicontrol(...
     'Parent',psignalBthorax,...
     'Style','edit',...
@@ -311,8 +318,9 @@ freqechA = uicontrol(...
     'Position',[735 125 60 25]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
-%Affichage des données sur les différents graphiques. 
-%Initialisation des lignes pour afficher les données sur les graphiques 
+
+%Affichage des donnÃ©es sur les diffÃ©rents graphiques. 
+%Initialisation des lignes pour afficher les donnÃ©es sur les graphiques 
 line_signalA_Thorax = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
 line_signalA_Abdo= line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
 line_signalB_Thorax = line(0, 0, 'Color', 'blue', 'LineWidth', 1, 'Parent', axe_signal_B_Thorax);
@@ -325,8 +333,14 @@ line_corr_Abdo = line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_corr);
 handles.dir='';
 handles.file_list='';
 handles.filename='';
-
-
+thorax_L=-1;
+thorax_C=-1;
+abdomen_L=-1;
+abdomen_C=-1;
+fenetre_thorax=-1;
+fenetre_abdo=-1;
+ r_thorax(:)=-1;
+r_abdo(:)=-1;
 %fonctions appelees dans le code precedent 
 
 %% Liste contenant tous les fichiers du repertorie
@@ -342,11 +356,12 @@ function selectdir_callback(source,eventdata)
     dir_name = uigetdir;
     if dir_name ~= 0
         handles.dir = dir_name;
-        search_name = [dir_name,'/*.txt']; %attention au format du fichier ! à changer en .mat pour lire les vraies donnees
+        search_name = [dir_name,'/*.mat']; %attention au format du fichier ! Ã  changer en .mat pour lire les vraies donnees
         files = struct2cell(dir(search_name));
-        handles.file_list = files(1,:)'
-        set(listedossier,'String', handles.file_list)
+        handles.file_list = files(1,:)';
+        set(listedossier,'String', handles.file_list);
         handles.filename = char(handles.file_list(1));
+        set(OK,'Enable','on')
     end
 end
 
@@ -357,12 +372,11 @@ function selectfile_callback(source,eventdata)
          file = file_name;
          chemin = strcat(pathName,file_name);
          set(cheminfichierVisuresp,'String', file)
-         delimiterIn_C = '\t';
-         headerlinesIn_C = 38;
 
-         fichierComplet=importdata(chemin,delimiterIn_C,headerlinesIn_C);
-         thorax_C=fichierComplet.data(1:length(fichierComplet.data),1);
-         abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
+         fichierComplet=importdata(chemin);
+         thorax_C=fichierComplet.THO(1:length(fichierComplet.THO));
+         abdomen_C=fichierComplet.ABD(1:length(fichierComplet.ABD));
+
          longueur_signal_C=length(thorax_C);
        
          %affichage
@@ -377,17 +391,19 @@ function selectfile_callback(source,eventdata)
 
 
     end
+if length(thorax_L)>2 & length(thorax_C)>2
+    set(lancercorrelation,'enable','on');
+end
 end
 
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok 
 function afficherGraph(source, eventdata)
     filename_L = [handles.dir, '\', handles.filename];
-    delimiterIn_L = '\t';
-    headerlinesIn_L= 5;
-    fichierLabChart= importdata(filename_L,delimiterIn_L,headerlinesIn_L);
-    thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),1);
-    abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),2);
+    fichierLabChart= importdata(filename_L);
+    thorax_L=fichierLabChart.THOd(1:length(fichierLabChart.THOd));
+    abdomen_L=fichierLabChart.ABDd(1:length(fichierLabChart.ABDd));
+
     longueur_signal_L=length(thorax_L);
 
     %affichage
@@ -396,11 +412,59 @@ function afficherGraph(source, eventdata)
     
     set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
     set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
+
     set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
     set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
 
+
+
+if  length(thorax_L)>2 & length(thorax_C)>2
+    set(lancercorrelation,'enable','on');
+end
+
 end 
 
+%% Intercorrelation
+
+    function calcul_correlation(source,eventdata)
+       r_thorax='';
+       r_abdo='';
+       %sous-echantillonnage
+       thorax_C_sous=thorax_C(1:freqLab:length(thorax_C));
+       
+       %selection des 3 zones de données dans le fichier LabChart, qui
+       %seront intercorrélées avec le signal VisuResp
+       thoL_zone1=thorax_L(1:length(thorax_L)/6);
+       thoL_zone2=thorax_L((length(thorax_L)*5)/12:(length(thorax_L)*7)/12);
+       thoL_zone3=thorax_L((length(thorax_L)*5)/6:length(thorax_L));
+       
+       abdoL_zone1=thorax_L(1:length(abdomen_L)/6);
+       abdoL_zone2=thorax_L((length(abdomen_L)*5)/12:(length(abdomen_L)*7)/12);
+       abdoL_zone3=thorax_L((length(abdomen_L)*5)/6:length(abdomen_L));
+       
+       %intercorrelation
+        for k=1:length(thorax_C)-length(thorax_L)-1
+            r_thorax{k}=xcorr(thorax_L,thorax_C(k:length(thorax_L+k)))
+            r_abdo{k}=xcorr(abdomen_L,abdomen_C(k:length(abdomen_L+k))) 
+            if k==1
+                inter_tho=r_thorax{1};
+            else
+                inter_tho(end+1)=r_thorax{k}(end)
+            end
+        end
+        [val_thorax,ind_thorax]=max(r_thorax);
+        fenetre_thorax=ind_thorax:ind_thorax+length(thorax_L);
+        set(corr_thorax_valeur,'String',val_thorax)
+%         set(axe_signal_A_Thorax,'Xlim',fenetre_thorax)
+        
+        [val_abdo,ind_abdo]=max(r_abdo);
+        fenetre_abdo=ind_abdo:ind_abdo+length(abdomen_L);
+        set(corr_abdo_valeur,'String',val_abdo)
+        
+        set(suivant,'enable','on');
+        set(precedent,'enable','on');
+        set(valider,'enable','on');
+    end
 
 end 
 
