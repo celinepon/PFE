@@ -236,7 +236,7 @@ suivant = uicontrol(...
     'String','Suivant',...
     'Position',[480 10 100 40],...
     'enable','off',...
-'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possedant un coefficient de correlation plus faible',...
+    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possedant un coefficient de correlation plus faible',...
     'Callback',{@null}); %appeler fonction pour avoir la correlation suivante
 
 
@@ -259,7 +259,6 @@ valider = uicontrol(...
     'Position',[680 10 100 40],...
     'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les sequences Visuresp et Biopac',...
-
     'Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
 corr_thorax_text = uicontrol(...
@@ -394,7 +393,7 @@ freq_L='';
             file = file_name;
             chemin = strcat(pathName,file_name);
             set(cheminfichierVisuresp,'String', file)
-
+            
             [~, ~, extension] = fileparts(file);
             if extension == '.mat'
                 fichierComplet=importdata(chemin);
@@ -415,7 +414,7 @@ freq_L='';
                 abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
                 
             else
-                msgbox('Le format de fichier n"est pas supporté, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+                msgbox('Le format de fichier n"est pas supportee, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
             end
             longueur_signal_C=length(thorax_C);
             
@@ -426,12 +425,12 @@ freq_L='';
             set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
             set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
             set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
-
+            
             axe_signal_A_Thorax.XAxis.TickValuesMode ='auto';
             axe_signal_A_Abdo.XAxis.TickValuesMode ='auto';
             axe_signal_A_Thorax.YAxis.TickValuesMode ='auto';
             axe_signal_A_Abdo.YAxis.TickValuesMode ='auto';
-
+            
         end
         if length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
@@ -474,8 +473,8 @@ freq_L='';
         
         %affichage
         
-        freq_L=20000;
-
+        freq_L=str2num(get(freqLab,'string'))
+        
         t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
         
         set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
@@ -486,7 +485,7 @@ freq_L='';
         axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
         axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
         axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
-
+        
         if  length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
@@ -515,145 +514,166 @@ freq_L='';
 %% Intercorrelation
 
     function calcul_correlation(source,eventdata)
-
+        
         r_thorax_zone1='';
         r_abdo_zone1='';
         
         r_thorax_zone2='';
         r_abdo_zone2='';
         
-        r_thorax__zone3='';
+        r_thorax_zone3='';
         r_abdo_zone3='';
-        
+        r_thorax=0;
+        tempo='';
         fenetre='';
         %sous-echantillonnage
-%         thorax_L_sous=thorax_L(1:round((1/freq_C)*freq_L,0):round(length(thorax_L)/freq_C,0))
-  thorax_L_sous=thorax_L(1:round((1/freq_C)*freq_L,0):length(thorax_L));
-        length(thorax_L_sous)
-        abdomen_L_sous=abdomen_L(1:round((1/freq_C)*freq_L,0):length(abdomen_L));
-          length(abdomen_L_sous)
-           length(abdomen_L)
-        %selection des 3 zones de donnees dans le fichier LabChart, qui
-        %seront intercorrelees avec le signal VisuResp
-        thoL_zone1=thorax_L_sous(1:length(thorax_L_sous)/6);
-        length(thorax_L_sous);
-        round((length(thorax_L_sous)*5)/12,0);
-        round((length(thorax_L_sous)*7)/12,0);
-        thoL_zone2=thorax_L_sous((length(thorax_L_sous)*5)/12:(length(thorax_L_sous)*7)/12);
-        thoL_zone3=thorax_L_sous((length(thorax_L_sous)*5)/6:length(thorax_L_sous));
-        
-        abdoL_zone1=abdomen_L_sous(1:length(abdomen_L_sous)/6);
-        abdoL_zone2=abdomen_L_sous((length(abdomen_L_sous)*5)/12:(length(abdomen_L_sous)*7)/12);
-        abdoL_zone3=abdomen_L_sous((length(abdomen_L_sous)*5)/6:length(abdomen_L_sous));
-        
-        %intercorrelation des 3 zones selectionnes avec le signal de
-        %visuresp
-        for k=1:length(thorax_C)-length(thorax_L_sous)-1
-            r_thorax_zone1{k}=xcorr(thoL_zone1,thorax_C(k:length(thoL_zone1+k)));
-            r_abdo_zone1{k}=xcorr(abdoL_zone1,abdomen_C(k:length(abdoL_zone1+k)));
-            
-            r_thorax_zone2{k}=xcorr(thoL_zone2,thorax_C(k:length(thoL_zone2+k)));
-            r_abdo_zone2{k}=xcorr(abdoL_zone2,abdomen_C(k:length(abdoL_zone2+k)));
-            
-            r_thorax_zone3{k}=xcorr(thoL_zone3,thorax_C(k:length(thoL_zone3+k)));
-            r_abdo_zone3{k}=xcorr(abdoL_zone3,abdomen_C(k:length(abdoL_zone3+k)));
-            
-
-            if k==1
-                inter_tho_zone1=r_thorax_zone1{1};
-                inter_abdo_zone1=r_abdo_zone1{1};
-                
-                inter_tho_zone2=r_thorax_zone2{1};
-                inter_abdo_zone2=r_abdo_zone2{1};
-                
-                inter_tho_zone3=r_thorax_zone3{1};
-                inter_abdo_zone3=r_abdo_zone3{1};
-                
-            else
-                inter_tho_zone1(end+1)=r_thorax_zone1{k}(end);
-                inter_abdo_zone1(end+1)=r_abdo_zone1{k}(end);
-                
-                inter_tho_zone2(end+1)=r_thorax_zone2{k}(end);
-                inter_abdo_zone2(end+1)=r_abdo_zone2{k}(end);
-                
-                inter_tho_zone3(end+1)=r_thorax_zone3{k}(end);
-                inter_abdo_zone3(end+1)=r_abdo_zone3{k}(end);
-            end
+       
+        thorax_L_sous=thorax_L(1:floor((1/freq_C)*freq_L):length(thorax_L));
+        abdomen_L_sous=abdomen_L(1:floor((1/freq_C)*freq_L):length(abdomen_L));
+        pas=floor(0.1*length(thorax_L_sous));
+        ind=1;
+        for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
+           
+           if k==1
+                tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k));
+               r_thorax(ind)=max(tempo);
+               ind=ind+1;
+           else
+               
+                 tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k));
+                  r_thorax(ind)=max(tempo);
+                  ind=ind+1;
+           end
+           
         end
-        
-        %max des correlations pour le thorax
-        [val_thorax1,ind_thorax1]=max(inter_tho_zone1) %max(r_thorax) a ete remplace par inter_tho_zoneX car cest dans cette variable qu'on enregistre les nouveaux points de correlation
-        [val_thorax2,ind_thorax2]=max(inter_tho_zone2)
-        [val_thorax3,ind_thorax3]=max(inter_tho_zone3)
-        
-        fenetre_tho_zone1=ind_thorax1:ind_thorax1+length(thoL_zone1);
-        fenetre_tho_zone2=ind_thorax2:ind_thorax2+length(thoL_zone2);
-        fenetre_tho_zone3=ind_thorax3:ind_thorax3+length(thoL_zone3);
-        
-        set(corr_thorax_valeur,'String',val_thorax1) %a modifier en fonction de quelle valeur de corr on veut afficher : moy des 3 corr ?
-        %         set(axe_signal_A_Thorax,'Xlim',fenetre_thorax)
-        
-        
-        %max des correlations pour l'abdomen
-        [val_abdo1,ind_abdo1]=max(inter_abdo_zone1)
-        [val_abdo2,ind_abdo2]=max(inter_abdo_zone2)
-        [val_abdo3,ind_abdo3]=max(inter_abdo_zone3)
-        
-        fenetre_abdo_zone1=ind_abdo1:ind_abdo+length(abdoL_zone1);
-        fenetre_abdo_zone2=ind_abdo2:ind_abdo1+length(abdoL_zone2);
-        fenetre_abdo_zone3=ind_abdo3:ind_abdo3+length(abdoL_zone3);
-        
-        set(corr_abdo_valeur,'String',val_abdo1) %a modifier en fonction de quelle valeur de corr on veut afficher : moy des 3 corr ?
-        
-        %calcul des distance entre les max de correlation
-        dist_tho_zone1_2= ind_thorax2-ind_thorax1;
-        dist_tho_zone1_3= ind_thorax3-ind_thorax1;
-        dist_tho_zone2_3= ind_thorax3-ind_thorax2;
-        
-        dist_abdo_zone1_2= ind_abdo2-ind_abdo1;
-        dist_abdo_zone1_3= ind_abdo3-ind_abdo1;
-        dist_abdo_zone2_3= ind_abdo3-ind_abdo2;
-        a=0;
-        i=0;
-        while a==0 && i<5;
-            if dist_tho_zone1_2 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98) || dist_tho_zone2_3 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98) || dist_tho_zone1_3 > (((length(thorax_L_sous)*5)/6)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/6)*0.98) || dist_abdo_zone1_2 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98)|| dist_abdo_zone2_3 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98) || dist_abdo_zone1_3 > (((length(abdomen_L_sous)*5)/6)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/6)*0.98)
-                [val_thorax2,ind_thorax2]=max(inter_tho_zone2([1:ind_thorax2-1, ind_thorax2+1:end]))
-                [val_thorax3,ind_thorax3]=max(inter_tho_zone3([1:ind_thorax1-1, ind_thorax1+1:end]))
-                
-                [val_abdo2,ind_abdo2]=max(inter_abdo_zone2([1:ind_abdo2-1, ind_abdo2+1:end]))
-                [val_abdo3,ind_abdo3]=max(inter_abdo_zone3([1:ind_abdo1-1, ind_abdo1+1:end]))
-                
-                i=i+1;
-                
-            else
-                a=1;
-                if ~(dist_tho_zone1_2 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98))
-                    fenetre = dist_tho_zone1_2(1):length(thorax_L_sous);
-                end
-                if ~(dist_tho_zone2_3 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98))
-                    fenetre = dist_tho_zone2_3(end)+length(thoL_zone3)-length(thorax_L_sous):dist_tho_zone2_3(end)+length(thoL_zone3);
-                end
-                if ~(dist_tho_zone1_3 > (((length(thorax_L_sous)*5)/6)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/6)*0.98))
-                    fenetre = dist_tho_zone1_3(1):length(thorax_L_sous);
-                end
-                if ~(dist_abdo_zone1_2 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98))
-                    fenetre = dist_abdo_zone1_2(1):length(abdomen_L_sous);
-                end
-                if ~(dist_abdo_zone2_3 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98))
-                    fenetre = dist_abdo_zone2_3(end)+length(abdoL_zone3)-length(abdomen_L_sous):dist_tho_zone2_3(end)+length(abdoL_zone3);
-                end
-                if ~(dist_abdo_zone1_3 > (((length(abdomen_L_sous)*5)/6)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/6)*0.98))
-                    fenetre = dist_abdo_zone1_3(1):length(abdomen_L_sous);
-                end
-                
-            end
-        end
-
-        
-        set(line_signalA_Thorax_super, 'XData', fenetre, 'YData', thorax_L)
+            figure;
+            plot(r_thorax)
+            indice =find(r_thorax==max(r_thorax))
+            debut_fen=( find(r_thorax==max(r_thorax))-1)*pas
+            fin_fen=(find(r_thorax==max(r_thorax))-1)*pas+length(thorax_L_sous)
+        fenetre=[debut_fen/freq_C fin_fen/freq_C]
+%         %selection des 3 zones de donnees dans le fichier LabChart, qui
+%         %seront intercorrelees avec le signal VisuResp
+%         thoL_zone1=thorax_L_sous(1:length(thorax_L_sous)/6);
+%         length(thorax_L_sous);
+%         round((length(thorax_L_sous)*5)/12,0);
+%         round((length(thorax_L_sous)*7)/12,0);
+%         thoL_zone2=thorax_L_sous((length(thorax_L_sous)*5)/12:(length(thorax_L_sous)*7)/12);
+%         thoL_zone3=thorax_L_sous((length(thorax_L_sous)*5)/6:length(thorax_L_sous));
+%         
+%         abdoL_zone1=abdomen_L_sous(1:length(abdomen_L_sous)/6);
+%         abdoL_zone2=abdomen_L_sous((length(abdomen_L_sous)*5)/12:(length(abdomen_L_sous)*7)/12);
+%         abdoL_zone3=abdomen_L_sous((length(abdomen_L_sous)*5)/6:length(abdomen_L_sous));
+%         
+%         %intercorrelation des 3 zones selectionnes avec le signal de
+%         %visuresp
+%         for k=1:length(thorax_C)-length(thorax_L_sous)-1
+%             r_thorax_zone1{k}=xcorr(thoL_zone1,thorax_C(k:length(thoL_zone1+k)));
+%             r_abdo_zone1{k}=xcorr(abdoL_zone1,abdomen_C(k:length(abdoL_zone1+k)));
+%             
+%             r_thorax_zone2{k}=xcorr(thoL_zone2,thorax_C(k:length(thoL_zone2+k)));
+%             r_abdo_zone2{k}=xcorr(abdoL_zone2,abdomen_C(k:length(abdoL_zone2+k)));
+%             
+%             r_thorax_zone3{k}=xcorr(thoL_zone3,thorax_C(k:length(thoL_zone3+k)));
+%             r_abdo_zone3{k}=xcorr(abdoL_zone3,abdomen_C(k:length(abdoL_zone3+k)));
+%             
+%             
+%             if k==1
+%                 inter_tho_zone1=r_thorax_zone1{1};
+%                 inter_abdo_zone1=r_abdo_zone1{1};
+%                 
+%                 inter_tho_zone2=r_thorax_zone2{1};
+%                 inter_abdo_zone2=r_abdo_zone2{1};
+%                 
+%                 inter_tho_zone3=r_thorax_zone3{1};
+%                 inter_abdo_zone3=r_abdo_zone3{1};
+%                 
+%             else
+%                 inter_tho_zone1(end+1)=r_thorax_zone1{k}(end);
+%                 inter_abdo_zone1(end+1)=r_abdo_zone1{k}(end);
+%                 
+%                 inter_tho_zone2(end+1)=r_thorax_zone2{k}(end);
+%                 inter_abdo_zone2(end+1)=r_abdo_zone2{k}(end);
+%                 
+%                 inter_tho_zone3(end+1)=r_thorax_zone3{k}(end);
+%                 inter_abdo_zone3(end+1)=r_abdo_zone3{k}(end);
+%             end
+%         end
+%         
+%         %max des correlations pour le thorax
+%         [val_thorax1,ind_thorax1]=max(inter_tho_zone1) %max(r_thorax) a ete remplace par inter_tho_zoneX car cest dans cette variable qu'on enregistre les nouveaux points de correlation
+%         [val_thorax2,ind_thorax2]=max(inter_tho_zone2)
+%         [val_thorax3,ind_thorax3]=max(inter_tho_zone3)
+%         
+%         fenetre_tho_zone1=ind_thorax1:ind_thorax1+length(thoL_zone1);
+%         fenetre_tho_zone2=ind_thorax2:ind_thorax2+length(thoL_zone2);
+%         fenetre_tho_zone3=ind_thorax3:ind_thorax3+length(thoL_zone3);
+%         
+%         set(corr_thorax_valeur,'String',val_thorax1) %a modifier en fonction de quelle valeur de corr on veut afficher : moy des 3 corr ?
+%         %         set(axe_signal_A_Thorax,'Xlim',fenetre_thorax)
+%         
+%         
+%         %max des correlations pour l'abdomen
+%         [val_abdo1,ind_abdo1]=max(inter_abdo_zone1)
+%         [val_abdo2,ind_abdo2]=max(inter_abdo_zone2)
+%         [val_abdo3,ind_abdo3]=max(inter_abdo_zone3)
+%         
+%         fenetre_abdo_zone1=ind_abdo1:ind_abdo+length(abdoL_zone1);
+%         fenetre_abdo_zone2=ind_abdo2:ind_abdo1+length(abdoL_zone2);
+%         fenetre_abdo_zone3=ind_abdo3:ind_abdo3+length(abdoL_zone3);
+%         
+%         set(corr_abdo_valeur,'String',val_abdo1) %a modifier en fonction de quelle valeur de corr on veut afficher : moy des 3 corr ?
+%         
+%         %calcul des distance entre les max de correlation
+%         dist_tho_zone1_2= ind_thorax2-ind_thorax1;
+%         dist_tho_zone1_3= ind_thorax3-ind_thorax1;
+%         dist_tho_zone2_3= ind_thorax3-ind_thorax2;
+%         
+%         dist_abdo_zone1_2= ind_abdo2-ind_abdo1;
+%         dist_abdo_zone1_3= ind_abdo3-ind_abdo1;
+%         dist_abdo_zone2_3= ind_abdo3-ind_abdo2;
+%         a=0;
+%         i=0;
+%         while a==0 && i<5;
+%             if dist_tho_zone1_2 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98) || dist_tho_zone2_3 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98) || dist_tho_zone1_3 > (((length(thorax_L_sous)*5)/6)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/6)*0.98) || dist_abdo_zone1_2 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98)|| dist_abdo_zone2_3 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98) || dist_abdo_zone1_3 > (((length(abdomen_L_sous)*5)/6)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/6)*0.98)
+%                 [val_thorax2,ind_thorax2]=max(inter_tho_zone2([1:ind_thorax2-1, ind_thorax2+1:end]))
+%                 [val_thorax3,ind_thorax3]=max(inter_tho_zone3([1:ind_thorax1-1, ind_thorax1+1:end]))
+%                 
+%                 [val_abdo2,ind_abdo2]=max(inter_abdo_zone2([1:ind_abdo2-1, ind_abdo2+1:end]))
+%                 [val_abdo3,ind_abdo3]=max(inter_abdo_zone3([1:ind_abdo1-1, ind_abdo1+1:end]))
+%                 
+%                 i=i+1;
+%                 
+%             else
+%                 a=1;
+%                 if ~(dist_tho_zone1_2 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98))
+%                     fenetre = dist_tho_zone1_2(1):length(thorax_L_sous);
+%                 end
+%                 if ~(dist_tho_zone2_3 > (((length(thorax_L_sous)*5)/12)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/12)*0.98))
+%                     fenetre = dist_tho_zone2_3(end)+length(thoL_zone3)-length(thorax_L_sous):dist_tho_zone2_3(end)+length(thoL_zone3);
+%                 end
+%                 if ~(dist_tho_zone1_3 > (((length(thorax_L_sous)*5)/6)*1.02) && dist_tho_zone1_2 < (((length(thorax_L_sous)*5)/6)*0.98))
+%                     fenetre = dist_tho_zone1_3(1):length(thorax_L_sous);
+%                 end
+%                 if ~(dist_abdo_zone1_2 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98))
+%                     fenetre = dist_abdo_zone1_2(1):length(abdomen_L_sous);
+%                 end
+%                 if ~(dist_abdo_zone2_3 > (((length(abdomen_L_sous)*5)/12)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/12)*0.98))
+%                     fenetre = dist_abdo_zone2_3(end)+length(abdoL_zone3)-length(abdomen_L_sous):dist_tho_zone2_3(end)+length(abdoL_zone3);
+%                 end
+%                 if ~(dist_abdo_zone1_3 > (((length(abdomen_L_sous)*5)/6)*1.02) && dist_abdo_zone1_2 < (((length(abdomen_L_sous)*5)/6)*0.98))
+%                     fenetre = dist_abdo_zone1_3(1):length(abdomen_L_sous);
+%                 end
+%                 
+%             end
+%         end
+%         
+        set(line_signalA_Thorax_super, 'XData', fenetre, 'YData', thorax_L_sous)
         set(line_signalA_Abdo_super, 'XData', fenetre, 'YData', abdomen_L)
-        set(line_signalA_Thorax_super, 'XData', fenetre , 'YData', thorax_L)
-        set(line_signalA_Abdo_super, 'XData', fenetre , 'YData', abdomen_L)
+        set(axe_signal_A_Thorax, 'XLim', fenetre)
+        set(axe_signal_A_Abdo, 'XLim', fenetre )
+%         set(line_signalA_Thorax_, 'XData', fenetre, 'YData', thorax_L_sous)
+        
         
         set(suivant,'enable','on');
         set(precedent,'enable','on');
