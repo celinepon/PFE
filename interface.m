@@ -135,6 +135,7 @@ axe_signal_A_Thorax = axes( ...
     'FontSize', 8, ...
     'Color', 'w', ...
     'XTick', [], ...
+    'Tag','Tho',...
     'Position', [30, 25, 700, 130] ...
     );
 temps_A_thorax = uicontrol('Parent',psignalAthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
@@ -145,6 +146,7 @@ axe_signal_A_Abdo = axes( ...
     'Units', 'Pixels', ...
     'FontSize', 8, ...
     'Color', 'w', ...
+    'Tag','Abd',...
     'XTick', [], ...
     'Position', [30, 25, 700, 130] ...
     );
@@ -322,6 +324,10 @@ freqechA = uicontrol(...
     'Position',[735 125 60 25]);
 
 
+set([axe_signal_A_Thorax, axe_signal_A_Abdo], 'buttondownfcn', {@button_down_function});
+set(f, 'WindowButtonUpFcn', {@button_up_function});
+set(f, 'WindowButtonMotionFcn', {@button_motion_function});
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
 
 
@@ -344,6 +350,9 @@ line_corr_Abdo = line(0, 0, 'Color', 'red', 'LineWidth', 1, 'Parent', axe_corr);
 handles.dir='';
 handles.file_list='';
 handles.filename='';
+handles.grabbed=-1;
+handles.xlim_tho=-1;
+handles.xlim_abdo=-1;
 thorax_L=-1;
 thorax_C=-1;
 abdomen_L=-1;
@@ -352,10 +361,181 @@ fenetre_thorax=-1;
 fenetre_abdo=-1;
 r_thorax(:)=-1;
 r_abdo(:)=-1;
-
+t_C=-1;
 freq_C='';
 freq_L='';
+intercorr_calculee=0;
 %fonctions appelees dans le code precedent
+%% Drag and Drop des signaux superposés lors de l'intercorrelation
+  function button_down_function(obj, ~)
+  
+        test = get(obj, 'Tag') =='Tho';
+        if test(1, 1) == 1 &intercorr_calculee
+            handles.grabbed=1;
+%             theaxes2 = ancestor(obj, 'line');
+%             ps2 = get(theaxes2, 'XData');
+%             i_temp2 = ps2(1, 1) + 0.005;
+%             j_temp2 = ps2(1, 1) - 0.005;
+%             barlist = [handles.bar_start_1, handles.bar_start_2, handles.bar_start_3, handles.bar_start_channels, handles.bar_end_1, handles.bar_end_2, handles.bar_end_3, handles.bar_end_channels];
+%             for j = 1:8
+%                 currentBar = get(barlist(j), 'XData');
+%                 if i_temp2 > currentBar(1) && j_temp2 < currentBar(1)
+%                     handles.grabbed_3 = j;
+%                     break
+%                 end
+%             end
+            
+        elseif test(1, 1)==0 & intercorr_calculee
+            handles.grabbed=2;
+%             ps2 = get(gca, 'CurrentPoint');
+%             i_temp2 = round(ps2(1, 1)) - 2;
+%             i_temp3 = round(ps2(1, 1)) + 2;
+%             j_temp2 = round(ps2(2, 2)) - 2;
+%             j_temp3 = round(ps2(2, 2)) + 2;
+%             if i_temp3 <= size(handles.cmosData_2, 1) || j_temp3 < size(handles.cmosData_2, 2) || i_temp2 > 1 || j_temp2 > 1
+%                 if size(handles.M2, 1) > 0
+%                     for j = 1:size(handles.M2, 1)
+%                         if handles.M2(j, 1) >= i_temp2 && handles.M2(j, 2) >= j_temp2 && handles.M2(j, 1) <= i_temp3 && handles.M2(j, 2) <= j_temp3
+%                             handles.grabbed_2 = j;
+%                             break
+%                         end
+%                     end
+%                 end
+%             end
+%         elseif theaxes == handles.movie_scrn_1
+%             ps2 = get(gca, 'CurrentPoint');
+%             i_temp2 = round(ps2(1, 1)) - 2;
+%             i_temp3 = round(ps2(1, 1)) + 2;
+%             j_temp2 = round(ps2(2, 2)) - 2;
+%             j_temp3 = round(ps2(2, 2)) + 2;
+%             % if one of the markers on the movie screen is clicked
+%             if i_temp3 <= size(handles.cmosData_1, 1) || j_temp3 < size(handles.cmosData_1, 2) || i_temp2 > 1 || j_temp2 > 1
+%                 if size(handles.M1, 1) > 0
+%                     for j = 1:size(handles.M1, 1)
+%                         if handles.M1(j, 1) >= i_temp2 && handles.M1(j, 2) >= j_temp2 && handles.M1(j, 1) <= i_temp3 && handles.M1(j, 2) <= j_temp3
+%                             handles.grabbed_1 = j;
+%                             break
+%                         end
+%                     end
+%                 end
+%             end
+        end
+  end
+
+ function button_motion_function(obj, ~)
+        % Update movie screen marker location
+    decal=5;
+        if handles.grabbed== -1
+           
+        elseif handles.grabbed==1
+                  ps = get(gca, 'CurrentPoint');
+                  if decal<ps(1,1) %vers la gauche
+                 set(axe_signal_A_Thorax,'XLim',[
+                  obj
+                  end
+        else
+          obj  ;
+        end
+%         ps = get(gca, 'CurrentPoint');
+%         i_temp = round(ps(1, 1));
+%         
+%         j_temp = round(ps(2, 2));
+%         
+%         if handles.grabbed_3 > -1
+%             i_temp = ps(1, 1);
+%             
+%             if handles.grabbed_3 <= 4
+%                 set(handles.bar_start_1, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_start_2, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_start_3, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_start_channels, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(starttimeamap_edit, 'String', round(i_temp, 3))
+%                 set(starttimeamap_edit2, 'String', round(i_temp, 3))
+%                 newEnd_callback(starttimeamap_edit)
+%             else
+%                 set(handles.bar_end_1, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_end_2, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_end_3, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(handles.bar_end_channels, 'XData', [i_temp, i_temp], 'YData', [0, 1])
+%                 set(endtimeamap_edit, 'String', round(i_temp, 3))
+%                 set(endtimeamap_edit2, 'String', round(i_temp, 3))
+%                 newEnd_callback(endtimeamap_edit)
+%             end
+%             
+%         end
+%         if i_temp <= size(handles.cmosData_1, 1) && j_temp <= size(handles.cmosData_1, 2) && i_temp > 1 && j_temp > 1
+%             casegrab = 0;
+%             if handles.grabbed_1 > -1
+%                 handles.M1(handles.grabbed_1, :) = [i_temp, j_temp];
+%                 if handles.symmetry
+%                     handles.M2(handles.grabbed_1, :) = [100 - i_temp, j_temp];
+%                 else
+%                     handles.M2 = handles.M1;
+%                 end
+%                 casegrab = handles.grabbed_1;
+%             end
+%             if handles.grabbed_2 > -1
+%                 handles.M2(handles.grabbed_2, :) = [i_temp, j_temp];
+%                 handles.M2 = handles.M1;
+%                 casegrab = handles.grabbed_2;
+%             end
+%             i = i_temp;
+%             j = j_temp;
+%             switch casegrab
+%                 case 1
+%                     handles.M1(1, :) = [i, j];
+%                     handles.M2(1, :) = [i, j];
+%                     set(handles.line_signal_scrn_1_2_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                     set(handles.line_signal_scrn_1_3_2, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                     if handles.graphdisplayed == 0
+%                         handles.graphdisplayed = 1;
+%                     end
+%                     
+%                     set(handles.line_signal_scrn_1_1_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     set(handles.line_signal_scrn_1_3_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     
+%                 case 2
+%                     handles.M1(2, :) = [i, j];
+%                     handles.M2(2, :) = [i, j];
+%                     set(handles.line_signal_scrn_2_2_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                     set(handles.line_signal_scrn_2_3_2, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                     if handles.graphdisplayed == 1
+%                         handles.graphdisplayed = 2;
+%                     end
+%                     
+%                     set(handles.line_signal_scrn_2_1_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     set(handles.line_signal_scrn_2_3_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     
+%                 case 3
+%                     handles.M1(3, :) = [i, j];
+%                     if handles.symmetry
+%                         handles.M2(3, :) = [100 - i, j];
+%                         set(handles.line_signal_scrn_3_2_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, 100 - i, :))+1);
+%                         set(handles.line_signal_scrn_3_3_2, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, 100 - i, :))+1);
+%                     else
+%                         handles.M2(3, :) = [i, j];
+%                         set(handles.line_signal_scrn_3_2_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                         set(handles.line_signal_scrn_3_3_2, 'XData', handles.time, 'YData', squeeze(handles.cmosData_2(j, i, :))+1);
+%                     end
+%                     if handles.graphdisplayed == 2
+%                         handles.graphdisplayed = 3;
+%                     end
+%                     
+%                     set(handles.line_signal_scrn_3_1_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     
+%                     set(handles.line_signal_scrn_3_3_1, 'XData', handles.time, 'YData', squeeze(handles.cmosData_1(j, i, :)));
+%                     
+%             end
+%             set(handles.scatM1, 'XData', handles.M1(:, 1), 'YData', handles.M1(:, 2))
+%             set(handles.scatM2, 'XData', handles.M2(:, 1), 'YData', handles.M2(:, 2))
+%         end
+ end
+
+% When mouse button is released
+    function button_up_function(~, ~)
+        handles.grabbed=-1;
+    end
+
 
 %% Liste contenant tous les fichiers du repertorie
     function filelist_callback(source,~)
@@ -380,6 +560,7 @@ freq_L='';
             handles.filename = char(handles.file_list(1));
             set(OK,'Enable','on')
         end
+        intercorr_calculee=0;
     end
 
 %% Selection du fichier contenant l'enregistrement continu de Visuresp
@@ -434,6 +615,7 @@ freq_L='';
         if length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
+        intercorr_calculee=0;
     end
 
 
@@ -535,22 +717,22 @@ freq_L='';
         %calcul 1ere intercorrelation (pas de 10 pourcent)
         pas=floor(0.1*length(thorax_L_sous));
         ind=1;
- 
+        
         
         for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
             
-%             tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-%             r_thorax(ind)=max(tempo);
-%             tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-%             r_abdo(ind)=max(tempo);
- tempo=cov(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1))/(std(thorax_L_sous)*std(thorax_C(k:length(thorax_L_sous)+k-1)));
- r_thorax(ind)=tempo(1,2);
-tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L_sous)*std(abdomen_C(k:length(abdomen_L_sous)+k-1)));
-            r_abdo(ind)=tempo(1,2);
+                        tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+                        r_thorax(ind)=max(tempo);
+                        tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+                        r_abdo(ind)=max(tempo);
+%             tempo=cov(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1))/(std(thorax_L_sous)*std(thorax_C(k:length(thorax_L_sous)+k-1)));
+%             r_thorax(ind)=tempo(1,2);
+%             tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L_sous)*std(abdomen_C(k:length(abdomen_L_sous)+k-1)));
+%             r_abdo(ind)=tempo(1,2);
             ind=ind+1;
             
         end
- 
+        
         figure;
         
         plot(r_thorax,'b')
@@ -560,11 +742,11 @@ tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L
         
         %calcul 2e intercorrelation (point par point) sur la fenetre
         %trouvee precedemment, + ou - le pas.
-
-%         indice_tho =find(r_thorax==max(abs(r_thorax)))
-%         indice_abdo =find(r_abdo==max(abs(r_abdo)))
-        indice_tho =find(r_thorax==max(r_thorax))
-        indice_abdo =find(r_abdo==max(r_abdo))
+        
+                indice_tho =find(r_thorax==max(abs(r_thorax)))
+                indice_abdo =find(r_abdo==max(abs(r_abdo)))
+%         indice_tho =find(r_thorax==max(r_thorax));
+%         indice_abdo =find(r_abdo==max(r_abdo));
         max(r_thorax)
         max(r_abdo)
         debut_fen_inter_tho=(indice_tho-2)*pas;
@@ -578,20 +760,20 @@ tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L
         
         for k=debut_fen_inter_tho:1:fin_fen_inter_tho
             
-%             tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-tempo=cov(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1))/(std(thorax_L_sous)*std(thorax_C(k:length(thorax_L_sous)+k-1)));
-r_thorax_fin(ind)=tempo(1,2);
-%             r_thorax_fin(ind)=max(tempo);
+                        tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+                        r_thorax_fin(ind)=max(tempo);  
+%             tempo=cov(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1))/(std(thorax_L_sous)*std(thorax_C(k:length(thorax_L_sous)+k-1)));
+%             r_thorax_fin(ind)=tempo(1,2);
             ind=ind+1;
             
         end
         
         ind=1;
         for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
-%             tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-         tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L_sous)*std(abdomen_C(k:length(abdomen_L_sous)+k-1)));
-            r_abdo_fin(ind)=tempo(1,2);
-%             r_abdo_fin(ind)=max(tempo);
+                        tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+                        r_abdo_fin(ind)=max(tempo);
+%              tempo=cov(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1))/(std(abdomen_L_sous)*std(abdomen_C(k:length(abdomen_L_sous)+k-1)));
+%             r_abdo_fin(ind)=tempo(1,2);
             ind=ind+1;
         end
         
@@ -602,15 +784,29 @@ r_thorax_fin(ind)=tempo(1,2);
         
         
         indice_tho =find(r_thorax_fin==max(abs(r_thorax_fin)));
+        max(abs(r_thorax_fin))
+        max(abs(r_abdo_fin))
         debut_fen_tho=debut_fen_inter_tho+indice_tho(1);
         fin_fen_tho=debut_fen_tho+length(thorax_L_sous);
         fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C]
         
-        indice_abdo =find(r_abdo_fin==max(abs(r_abdo_fin)))
+        indice_abdo =find(r_abdo_fin==max(abs(r_abdo_fin)));
         debut_fen_abdo=debut_fen_inter_abdo+indice_abdo(1);
         fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
         fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C]
-        
+%         
+        if max(abs(r_thorax_fin))<max(abs(r_abdo_fin))
+         debut_fen_tho=debut_fen_abdo;
+        fin_fen_tho=fin_fen_abdo;
+        fenetre_tho=fenetre_abdo;
+        a=0
+          
+        else
+            debut_fen_abdo=debut_fen_tho;
+        fin_fen_abdo=fin_fen_tho;
+        fenetre_abdo=fenetre_tho;
+        a=1
+        end
         
         %             fenetre=[debut_fen/freq_C fin_fen/freq_C]
         %         %selection des 3 zones de donnees dans le fichier LabChart, qui
@@ -728,24 +924,26 @@ r_thorax_fin(ind)=tempo(1,2);
         %
         %             end
         %         end
-
+        
         abdo_data_norm=(abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C));
         tho_data_norm=(thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C));
         temps_fenetre_tho=debut_fen_tho/freq_C:1/freq_C:fin_fen_tho/freq_C-1/freq_C;
         temps_fenetre_abdo=debut_fen_abdo/freq_C:1/freq_C:fin_fen_abdo/freq_C-1/freq_C;
-     
+        
         set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
         set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
-        set(line_signalA_Thorax, 'XData', temps_fenetre_tho, 'YData', tho_data_norm(debut_fen_tho:1:fin_fen_tho-1))
-        set(line_signalA_Abdo, 'XData', temps_fenetre_abdo, 'YData', abdo_data_norm(debut_fen_abdo:1:fin_fen_abdo-1))
+        set(line_signalA_Thorax, 'XData', t_C, 'YData', tho_data_norm)
+        set(line_signalA_Abdo, 'XData', t_C, 'YData', abdo_data_norm)
         
         set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
         set(axe_signal_A_Abdo, 'XLim', fenetre_abdo )
-
+        
         
         set(suivant,'enable','on');
         set(precedent,'enable','on');
         set(valider,'enable','on');
+        
+        intercorr_calculee=1;
     end
 
 end
