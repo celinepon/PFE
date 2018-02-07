@@ -165,6 +165,7 @@ axe_corr = axes( ...
     'FontSize', 8, ...
     'Color', 'w', ...
     'XTick', [], ...
+    'NextPlot','add',...
     'Position', [30, 20, 390, 280] ...
     );
 
@@ -274,7 +275,7 @@ corr_thorax_valeur = uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
     'FontSize',9,...
-     'String','',...
+    'String','',...
     'Position',[120 305 50 25]);
 
 corr_abdo_text = uicontrol(...
@@ -287,7 +288,7 @@ corr_abdo_text = uicontrol(...
 corr_abdo_valeur = uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
-        'String','',...
+    'String','',...
     'FontSize',9,...
     'Position',[330 305 50 25]);
 
@@ -340,8 +341,10 @@ line_signalB_Thorax = line(0, 0, 'Color', bleu_clair, 'LineWidth', 1, 'Parent', 
 line_signalB_Abdo = line(0, 0, 'Color', orange, 'LineWidth', 1, 'Parent', axe_signal_B_Abdo);
 line_signalA_Thorax_super = line(0, 0, 'Color', bleu_clair, 'LineWidth', 1, 'Parent', axe_signal_A_Thorax);
 line_signalA_Abdo_super= line(0, 0, 'Color', orange, 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
-scatter_corr_Thorax = scatter(0, 0, 'MarkerFaceColor', 'b', 'LineWidth', 1, 'Parent', axe_corr,'Tag','Cor','Marker','x','Visible','off','buttondownfcn',{@button_down_function});
-scatter_corr_Abdo = scatter(0, 0, 'MarkerFaceColor', 'r', 'LineWidth', 1, 'Parent', axe_corr,'Tag','Cor','Marker','x','Visible','off','buttondownfcn',{@button_down_function});
+
+
+scatter_corr_Abdo = scatter(0,0,'r','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoA','Visible','off','buttondownfcn',{@button_down_function});
+scatter_corr_Thorax = scatter(0,0,'b','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoT','Visible','off','buttondownfcn',{@button_down_function});
 
 set([axe_signal_A_Thorax, axe_signal_A_Abdo], 'buttondownfcn', {@button_down_function});
 set(f, 'WindowButtonUpFcn', {@button_up_function});
@@ -371,8 +374,15 @@ decal=-1;
 thorax_L_sous=-1;
 abdomen_L_sous=-1;
 intercorr_calculee=0;
+r_thorax(1)=-1;
+pval_tho(1)=-1;
+r_abdo(1)=-1;
+pval_abdo(1)=-1;
+pas=-1;
+
 %fonctions appelees dans le code precedent
 %% Drag and Drop des signaux superposés lors de l'intercorrelation
+
     function button_down_function(obj, ~)
         if get(obj, 'Tag')=='Tho'&intercorr_calculee
             handles.grabbed=1;
@@ -382,13 +392,19 @@ intercorr_calculee=0;
             handles.grabbed=2;
             ps = get(gca, 'CurrentPoint');
             decal=ps(1,1);
-        elseif get(obj, 'Tag')=='Cor'&intercorr_calculee
-             handles.grabbed=3;
-            ps = get(gca, 'CurrentPoint');
-             [x, y] = myginput(1, 'circle');
+        elseif get(obj, 'Tag')=='CoA'&intercorr_calculee
+            handles.grabbed=3;
+            ps = get(gca, 'CurrentPoint')
+            indice=find(r_abdo<ps(1,2)+0.001&r_abdo>ps(1,2)-0.001);
+            selection_point(indice,0)
+        else
+            handles.grabbed=3;
+            ps = get(gca,'CurrentPoint');
+            indice=find(r_thorax<ps(1,2)+0.001&r_thorax>ps(1,2)-0.001);
+            selection_point(indice,0)
         end
     end
-%  [i_temp, j_temp] = myginput(1, 'circle');
+
     function button_motion_function(obj, ~)
         % Update movie screen marker location
         
@@ -413,7 +429,6 @@ intercorr_calculee=0;
     function button_up_function(~, ~)
         handles.grabbed=-1;
     end
-
 
 %% Liste contenant tous les fichiers du repertorie
     function filelist_callback(source,~)
@@ -483,7 +498,8 @@ intercorr_calculee=0;
             set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
             set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
             set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
-            
+            set(line_signalA_Thorax_super, 'Visible','off')
+            set(line_signalA_Abdo_super,  'Visible','off')
             axe_signal_A_Thorax.XAxis.TickValuesMode ='auto';
             axe_signal_A_Abdo.XAxis.TickValuesMode ='auto';
             axe_signal_A_Thorax.YAxis.TickValuesMode ='auto';
@@ -496,6 +512,7 @@ intercorr_calculee=0;
         intercorr_calculee=0;
     end
 
+%% Affichage des signaux
 
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok
@@ -587,8 +604,8 @@ intercorr_calculee=0;
         fenetre_abdo=0;
         debut_fen_tho=0;
         debut_fen_abdo=0;
-        pval_tho(1)=-1;
-        pval_abdo(1)=-1;        
+        pval_tho=-1;
+        pval_abdo=-1;
         %sous-echantillonnage
         
         %A:interpol
@@ -599,21 +616,20 @@ intercorr_calculee=0;
         abdomen_L_sous= interp1(t_L,abdomen_L,t_L2,'spline');
         
         %B:sousech
-%                 thorax_L_sous=thorax_L(1:floor((1/freq_C)*freq_L):length(thorax_L));
-%                 abdomen_L_sous=abdomen_L(1:floor((1/freq_C)*freq_L):length(abdomen_L));
-%         
+        %                 thorax_L_sous=thorax_L(1:floor((1/freq_C)*freq_L):length(thorax_L));
+        %                 abdomen_L_sous=abdomen_L(1:floor((1/freq_C)*freq_L):length(abdomen_L));
+        %
         
         %calcul 1ere fenetre (pas de 5 pourcent)
-        pas=floor(0.10*length(thorax_L_sous));
+        pas=floor(0.05*length(thorax_L_sous));
         ind=1;
         
         for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
             %C: calcul intercorrelation
-%                         tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-%                         r_thorax(ind)=max(tempo);
-%                         tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-%                         r_abdo(ind)=max(tempo);
-%             
+            %                         tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+            %                         r_thorax(ind)=max(tempo);
+            %                         tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+            %                         r_abdo(ind)=max(tempo);
             %D: calcul coeff correlation
             [val,p]=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
             r_thorax(ind)=val(1,2);
@@ -622,9 +638,9 @@ intercorr_calculee=0;
             [val,p]=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
             r_abdo(ind)=val(1,2);
             pval_abdo(ind)=1-p(1,2);
-                       
+            
             ind=ind+1;
-             
+            
         end
         
         figure;
@@ -638,7 +654,9 @@ intercorr_calculee=0;
         %trouvee precedemment, + ou - le pas.
         
         indice_tho =find(r_thorax==max(r_thorax));
-        maxi_val=max(max(r_abdo),max(r_thorax))
+        maxi_val=max(max(r_abdo),max(r_thorax));
+        max_tho=max(r_thorax)
+        max_abdo=max(r_abdo)
         maxi_pval=max(max(pval_abdo),max(pval_tho));
         indice_abdo =find(r_abdo==max(r_abdo));
         if indice_tho==1
@@ -648,8 +666,8 @@ intercorr_calculee=0;
             debut_fen_inter_tho=pas;
             fin_fen_inter_tho=pas+length(thorax_L_sous);
         else
-            debut_fen_inter_tho=(indice_tho-2)*pas
-            fin_fen_inter_tho=(indice_tho)*pas+length(thorax_L_sous)
+            debut_fen_inter_tho=(indice_tho-2)*pas;
+            fin_fen_inter_tho=(indice_tho)*pas+length(thorax_L_sous);
         end
         if indice_abdo==1
             debut_fen_inter_abdo=1;
@@ -664,14 +682,13 @@ intercorr_calculee=0;
         r_thorax_fin=0;
         r_abdo_fin=0;
         ind=1;
-%  length(thorax_C)
-%  fin_fen_inter_tho+length(thorax_L_sous)
+        
         for k=debut_fen_inter_tho:1:fin_fen_inter_tho
             
             %C
-%                         tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-%                         r_thorax_fin(ind)=max(tempo);
-%             
+            %                         tempo=xcorr(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+            %                         r_thorax_fin(ind)=max(tempo);
+            %
             % D
             
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
@@ -685,9 +702,9 @@ intercorr_calculee=0;
         for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
             
             %C
-%                         tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-%                         r_abdo_fin(ind)=max(tempo);
-%             
+            %                         tempo=xcorr(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+            %                         r_abdo_fin(ind)=max(tempo);
+            %
             %D
             val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
             r_abdo_fin(ind)=val(1,2);
@@ -705,35 +722,34 @@ intercorr_calculee=0;
         max_tho=max(r_thorax_fin)
         debut_fen_tho=debut_fen_inter_tho+indice_tho(1)-1;
         fin_fen_tho=debut_fen_tho+length(thorax_L_sous);
-        fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C]
+        fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C];
         
         indice_abdo =find(r_abdo_fin==max(r_abdo_fin));
         max_abdo= max(r_abdo_fin)
         debut_fen_abdo=debut_fen_inter_abdo+indice_abdo(1)-1;
         fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
-        fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C]
+        fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C];
         
         if max(r_thorax_fin)<max(r_abdo_fin)
             debut_fen_tho=debut_fen_abdo;
             fin_fen_tho=fin_fen_abdo;
             fenetre_tho=fenetre_abdo;
-           
+            
         else
             debut_fen_abdo=debut_fen_tho;
             fin_fen_abdo=fin_fen_tho;
             fenetre_abdo=fenetre_tho;
-           
+            
         end
-        
         
         temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
         temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
         
-        set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
-        set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
+        set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)),'Visible','on')
+        set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)),'Visible','on')
         set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
         set(line_signalA_Abdo, 'XData', t_C, 'YData', (abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C)))
-
+        
         set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
         set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
         
@@ -744,14 +760,83 @@ intercorr_calculee=0;
         set(corr_thorax_valeur,'String',round(max_tho,4))
         intercorr_calculee=1;
         
-                
-        set(scatter_corr_Thorax,'XDataSource',pval_tho,'YDataSource',r_thorax,'Visible','on')
+        
         set(scatter_corr_Abdo,'XData',pval_abdo,'YData',r_abdo,'Visible','on')
-        set(axe_corr, 'YLim', [0.6*maxi_val maxi_val*1.1], 'XLim', [0.5*maxi_pval maxi_pval*1.1])
-              axe_corr.XAxis.TickValuesMode ='auto';
-            axe_corr.YAxis.TickValuesMode ='auto'; 
+        set(scatter_corr_Thorax,'XData',pval_tho,'YData',r_thorax,'Visible','on')
+        
+        set(axe_corr,'YLim',[0.8*maxi_val maxi_val*1.01],'XLim',[0.99*maxi_pval maxi_pval*1.01])
+        %set(axe_corr, 'YLim', [0 1], 'XLim', [0 1.1])
+        
+        %              axe_corr.XAxis.TickValuesMode ='auto';
+        %           axe_corr.YAxis.TickValuesMode ='auto';
         
     end
 
+% Changement de fenetre en fonction du point (coefficient-pvalue)
+% sélectionné
 
+    function selection_point(indice,~)
+        %source=r_thorax donc indice=indice de r_thorax
+        
+        if indice==1
+            debut_fen_inter=1;
+            fin_fen_inter=length(thorax_L_sous);
+        elseif indice==2
+            debut_fen_inter=pas;
+            fin_fen_inter=pas+length(thorax_L_sous);
+        else
+            debut_fen_inter=(indice-2)*pas
+            fin_fen_inter=(indice)*pas+length(thorax_L_sous)
+        end
+        
+        r_thorax_fin=0;
+        r_abdo_fin=0;
+        ind=1;
+        
+        for k=debut_fen_inter:1:fin_fen_inter
+            val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+            r_thorax_fin(ind)=val(1,2);
+            val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+            r_abdo_fin(ind)=val(1,2);
+            
+            ind=ind+1;
+        end
+        
+        indice_tho =find(r_thorax_fin==max(r_thorax_fin));
+        max_tho=max(r_thorax_fin)
+        debut_fen_tho=debut_fen_inter+indice_tho(1)-1
+        fin_fen_tho=debut_fen_tho+length(thorax_L_sous)
+        fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C]
+        
+        indice_abdo =find(r_abdo_fin==max(r_abdo_fin));
+        max_abdo= max(r_abdo_fin)
+        debut_fen_abdo=debut_fen_inter+indice_abdo(1)-1;
+        fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
+        fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C]
+        
+        if max(r_thorax_fin)<max(r_abdo_fin)
+            debut_fen_tho=debut_fen_abdo;
+            fin_fen_tho=fin_fen_abdo;
+            fenetre_tho=fenetre_abdo;
+            
+        else
+            debut_fen_abdo=debut_fen_tho;
+            fin_fen_abdo=fin_fen_tho;
+            fenetre_abdo=fenetre_tho;
+            
+        end
+        
+        temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
+        temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
+        
+        set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
+        set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
+        set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
+        set(line_signalA_Abdo, 'XData', t_C, 'YData', (abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C)))
+        set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
+        set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
+        set(corr_abdo_valeur,'String',round(max_abdo,4))
+        set(corr_thorax_valeur,'String',round(max_tho,4))
+        intercorr_calculee=1;
+    end
 end
