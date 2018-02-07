@@ -343,8 +343,8 @@ line_signalA_Thorax_super = line(0, 0, 'Color', bleu_clair, 'LineWidth', 1, 'Par
 line_signalA_Abdo_super= line(0, 0, 'Color', orange, 'LineWidth', 1, 'Parent', axe_signal_A_Abdo);
 
 
-scatter_corr_Abdo = scatter(0,0,'r','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoA','Visible','off','buttondownfcn',{@button_down_function});
-scatter_corr_Thorax = scatter(0,0,'b','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoT','Visible','off','buttondownfcn',{@button_down_function});
+scatter_corr_Abdo = scatter(0,0,'r','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoA','Visible','off','Selected','off','buttondownfcn',{@button_down_function});
+scatter_corr_Thorax = scatter(0,0,'b','filled', 'Marker', 'o', 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoT','Visible','off','Selected','off','buttondownfcn',{@button_down_function});
 
 set([axe_signal_A_Thorax, axe_signal_A_Abdo], 'buttondownfcn', {@button_down_function});
 set(f, 'WindowButtonUpFcn', {@button_up_function});
@@ -397,6 +397,9 @@ pas=-1;
             ps = get(gca, 'CurrentPoint')
             indice=find(r_abdo<ps(1,2)+0.001&r_abdo>ps(1,2)-0.001);
             selection_point(indice,0)
+            if ~isempty(indice)
+            set(scatter_corr_Abdo,'selected','on')
+            end
         else
             handles.grabbed=3;
             ps = get(gca,'CurrentPoint');
@@ -777,7 +780,11 @@ pas=-1;
 
     function selection_point(indice,~)
         %source=r_thorax donc indice=indice de r_thorax
-        
+        temps_fenetre_tho=-1;
+        fenetre_tho=-1;
+        fenetre_abdo=-1;
+        temps_fenetre_abdo=-1;
+        indice
         if indice==1
             debut_fen_inter=1;
             fin_fen_inter=length(thorax_L_sous);
