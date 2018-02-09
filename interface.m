@@ -165,8 +165,9 @@ axe_corr = axes( ...
     'FontSize', 8, ...
     'Color', 'w', ...
     'XTick', [], ...
+    'Tag','Cor',...
     'NextPlot','add',...
-    'Position', [30, 20, 390, 280] ...
+    'Position', [40, 40, 380, 260] ...
     );
 
 temps_corr = uicontrol(...
@@ -228,41 +229,19 @@ lancercorrelation = uicontrol(...
     'Style','pushbutton',...
     'FontSize',9,...
     'String','Trouver correlation',...
-    'Position',[20 10 180 40],...
+    'Position',[100 10 180 40],...
     'enable','off',...
     'Callback',{@calcul_correlation}); %appeler fonction correlation
-
-suivant = uicontrol(...
-    'Parent',pcorrelation,...
-    'Style','pushbutton',...
-    'FontSize',9,...
-    'String','Suivant',...
-    'Position',[480 10 100 40],...
-    'enable','off',...
-    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visurep possedant un coefficient de correlation plus faible',...
-    'Callback',{@null}); %appeler fonction pour avoir la correlation suivante
-
-
-precedent = uicontrol(...
-    'Parent',pcorrelation,...
-    'Style','pushbutton',...
-    'FontSize',9,...
-    'String','Precedent',...
-    'Position',[280 10 100 40],...
-    'enable','off',...
-    'ToolTipString', 'Permet de faire apparaitre la portion du signal Visuresp possedant un coefficient de correlation plus eleve',...
-    'Callback',{@null}); %appeler fonction pour avoir correlation precedente
-
 
 valider = uicontrol(...
     'Parent',pcorrelation,...
     'Style','pushbutton',...
     'FontSize',9,...
-    'String','Valider',...
-    'Position',[680 10 100 40],...
+    'String','Extraire',...
+    'Position',[500 10 100 40],...
     'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les sequences Visuresp et Biopac',...
-    'Callback',{@null}); %appeler fonction pour changer les fichiers Biopac par Visurep
+    'Callback',{@valider_correlation}); %appeler fonction pour changer les fichiers Biopac par Visurep
 
 corr_thorax_text = uicontrol(...
     'Parent',pvaleur,...
@@ -347,7 +326,7 @@ scatter_corr_Abdo = scatter(0,0,'r','filled', 'Marker', 'o','MarkerFaceAlpha', 0
 scatter_corr_Thorax = scatter(0,0,'b','filled', 'Marker', 'o','MarkerFaceAlpha',0.5, 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoT','Visible','off','buttondownfcn',{@button_down_function});
 scatter_corr_Select = scatter(0,0,'black','filled', 'Marker', 'o', 'MarkerEdgeColor', [0, 0, 0], 'Parent', axe_corr,'Tag','CoA','Visible','off','buttondownfcn',{@button_down_function});
 
-set([axe_signal_A_Thorax, axe_signal_A_Abdo], 'buttondownfcn', {@button_down_function});
+set([axe_signal_A_Thorax, axe_signal_A_Abdo,axe_corr], 'buttondownfcn', {@button_down_function});
 set(f, 'WindowButtonUpFcn', {@button_up_function});
 set(f, 'WindowButtonMotionFcn', {@button_motion_function});
 
@@ -372,14 +351,19 @@ t_L=-1;
 freq_C='';
 freq_L='';
 decal=-1;
+decal2=-1;
 thorax_L_sous=-1;
 abdomen_L_sous=-1;
 intercorr_calculee=0;
 r_thorax(1)=-1;
+fenetre_corr_x=-1;
+fenetre_corr_y=-1;
 pval_tho(1)=-1;
 r_abdo(1)=-1;
 pval_abdo(1)=-1;
 pas=-1;
+maxi_pval=-1;
+maxi_val=-1;
 
 %fonctions appelees dans le code precedent
 %% Drag and Drop des signaux superposés lors de l'intercorrelation
@@ -396,27 +380,41 @@ pas=-1;
         elseif get(obj, 'Tag')=='CoA'&intercorr_calculee
             handles.grabbed=3;
             ps = get(gca, 'CurrentPoint');
-            length(r_abdo)
             indice=find(r_abdo<ps(1,2)+0.001&r_abdo>ps(1,2)-0.001);
+             if ~isempty(indice)
             indice=indice(1);
             selection_point(indice,0);
-            set(scatter_corr_Select,'XData',pval_abdo(indice),'YData',r_abdo(indice),'Visible','on','MarkerFaceColor','r','LineWidth',1)
-
-        else
+            r_select=r_abdo(indice);
+            pval_select=pval_abdo(indice)
+            set(scatter_corr_Select,'XData',pval_select,'YData',r_select,'Visible','on','MarkerFaceColor','r','LineWidth',1)
+        end
+        elseif get(obj, 'Tag')=='CoT'&intercorr_calculee
             handles.grabbed=3;
             ps = get(gca,'CurrentPoint');
             indice=find(r_thorax<ps(1,2)+0.001&r_thorax>ps(1,2)-0.001);
+            if ~isempty(indice)
             indice=indice(1);
             selection_point(indice,0);
              set(scatter_corr_Select,'XData',pval_tho(indice),'YData',r_thorax(indice),'Visible','on','MarkerFaceColor','b','LineWidth',1)
+            end
+         elseif get(obj, 'Tag')=='Cor'&intercorr_calculee
+               handles.grabbed=4;
+          
+            ps = get(gca, 'CurrentPoint');
+            
+            decal2(1,1)=ps(1,1);
+             decal2(1,2)=ps(1,2);
+            
         end
+            
+        
     end
 
     function button_motion_function(obj, ~)
         % Update movie screen marker location
         
         if handles.grabbed==-1 |handles.grabbed==3
-        else
+        elseif handles.grabbed==2 | handles.grabbed==1
             ps = get(gca, 'CurrentPoint');
             fenetre_tho=fenetre_tho-((ps(1,1)-decal)*15)/freq_C;
             fenetre_abdo=fenetre_tho;
@@ -428,6 +426,13 @@ pas=-1;
             set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
             set(line_signalA_Abdo_super, 'XData',temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
             decal=ps(1,1);
+        elseif handles.grabbed==4
+            ps = get(gca, 'CurrentPoint');
+            fenetre_corr_x=fenetre_corr_x-((ps(1,1)-decal2(1,1)));
+            fenetre_corr_y=fenetre_corr_y-((ps(1,2)-decal2(1,2)));
+            set(axe_corr,'XLim',fenetre_corr_x,'YLim',fenetre_corr_y)
+            decal2(1,1)=ps(1,1);
+            decal2(1,2)=ps(1,2);
         end
         
     end
@@ -556,7 +561,7 @@ pas=-1;
         
         %affichage
         
-        freq_L=str2num(get(freqLab,'string'))
+        freq_L=str2num(get(freqLab,'string'));
         
         t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
         
@@ -738,8 +743,7 @@ else
         set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
         set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
         
-        set(suivant,'enable','on');
-        set(precedent,'enable','on');
+
         set(valider,'enable','on');
         set(corr_abdo_valeur,'String',round(max_abdo,4))
         set(corr_thorax_valeur,'String',round(max_tho,4))
@@ -748,11 +752,13 @@ else
         
         set(scatter_corr_Abdo,'XData',pval_abdo,'YData',r_abdo,'Visible','on')
         set(scatter_corr_Thorax,'XData',pval_tho,'YData',r_thorax,'Visible','on')
-        
-        set(axe_corr,'YLim',[0.8*maxi_val maxi_val*1.01],'XLim',[0.99*maxi_pval maxi_pval*1.01])
+        set(scatter_corr_Select,'XData',pval_tho,'YData',r_thorax,'Visible','off')
+        fenetre_corr_x=[0.99*maxi_pval maxi_pval*1.01];
+        fenetre_corr_y=[0.8*maxi_val maxi_val*1.01];
+        set(axe_corr,'XLim',fenetre_corr_x,'YLim',fenetre_corr_y)
         %set(axe_corr, 'YLim', [0 1], 'XLim', [0 1.1])
         
-        %              axe_corr.XAxis.TickValuesMode ='auto';
+                     axe_corr.XAxis.TickValuesMode ='auto';
         %           axe_corr.YAxis.TickValuesMode ='auto';
         close(h);
     end
@@ -766,7 +772,7 @@ else
         fenetre_tho=-1;
         fenetre_abdo=-1;
         temps_fenetre_abdo=-1;
-indice=length(r_abdo)
+%indice=length(r_abdo)
         if indice==1
             debut_fen_inter=1;
             fin_fen_inter=length(thorax_L_sous);
@@ -834,5 +840,10 @@ indice=length(r_abdo)
         set(corr_thorax_valeur,'String',round(max_tho,4))
         intercorr_calculee=1;
         close(h)
+    end
+
+%Valider et exporter la zone correpondant au Biopac dans le VisuResp
+
+    function valider_correlation(~,~)
     end
 end
