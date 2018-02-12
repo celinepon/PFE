@@ -336,6 +336,7 @@ handles.filename='';
 handles.grabbed=-1;
 handles.xlim_tho=-1;
 handles.xlim_abdo=-1;
+fichierLabChart=-1;
 thorax_L=-1;
 thorax_C=-1;
 abdomen_L=-1;
@@ -489,7 +490,7 @@ maxi_val=-1;
                     thorax_C=fichierComplet.data(1:length(fichierComplet.data),3);
                     abdomen_C=fichierComplet.data(1:length(fichierComplet.data),4);
                 else
-                    msgbox('Le contenu de ce fichier .mat n"est pas structure de faÃ§on adequate (data.data) ', 'Title', 'help')
+                    msgbox('Le contenu de ce fichier .mat n"est pas structure de facon adequate (data.data) ', 'Title', 'help')
                 end
             elseif extension == '.rcg'
                 delimiterIn_C = '\t';
@@ -555,7 +556,7 @@ maxi_val=-1;
             abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),2);
             
         else
-            msgbox('Le format de fichier n"est pas supportÃ©, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+            msgbox('Le format de fichier n"est pas supporte, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
         end
         longueur_signal_L=length(thorax_L);
         
@@ -845,5 +846,26 @@ else
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
+        freq_surech=freq_L;
+        fenetre_tho
+        
+        t_L2=fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C;
+        thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
+        abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
+        
+        [~, ~, extension] = fileparts(handles.filename);
+        
+        if extension == '.mat'
+            fichier.ABDd=abdo_L_sur;
+            fichier.THOd=thorax_L_sur;
+        else extension=='.rcg'
+            fichier.data(l:length(thorax_L_sur),1)=thorax_L_sur;
+            fichier.data(l:length(abdo_L_sur),2)=abdo_L_sur;
+            fichier.delimiterIn_C=fichierLabChart.delimiterIn_C;
+            fichier.headerlinesIn_C=fichierLabChart.headerlinesIn_C;
+        end
+        s=fichier;
+        save([handles.dir,'\',handles.filename], '-struct', 's')
+         msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
     end
 end
