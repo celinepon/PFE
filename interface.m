@@ -600,7 +600,7 @@ maxi_val=-1;
 %% Intercorrelation
 
     function calcul_correlation(source,eventdata)
-       
+tic        
 if get(freqLab,'String')=='1'
      msgbox('La fréquence des fichiers Biopac est incorrecte.', 'Title', 'help')
 else
@@ -616,7 +616,7 @@ else
         pval_tho=-1;
         pval_abdo=-1;
         %sous-echantillonnage
-
+        
         freq_surech=freq_C;
         t_L2=0:1/freq_surech:(length(thorax_L)/freq_L-1/freq_L);
         
@@ -717,7 +717,7 @@ else
         ind=1;
         for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_tho_fin(ind)=val(1,2);
+            r_thorax_fin(ind)=val(1,2);
             
             ind=ind+1;
         end
@@ -750,7 +750,7 @@ else
 
         set(valider,'enable','on');
         set(corr_abdo_valeur,'String',round(max(r_abdo_fin),4))
-        set(corr_thorax_valeur,'String',round(max(r_tho_fin),4))
+        set(corr_thorax_valeur,'String',round(max(r_thorax_fin),4))
         intercorr_calculee=1;
         
         
@@ -768,7 +768,8 @@ else
         
         axe_corr.XAxis.TickValuesMode ='auto';
         close(h);
-    end
+end
+    toc
     end
 % Changement de fenetre en fonction du point (coefficient-pvalue)
 % sélectionné
@@ -850,13 +851,13 @@ else
 
     function valider_correlation(~,~)
         freq_surech=freq_L;
-         
-        t_L2=fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C;
+        
+        t_L2=(fenetre_tho(1)*freq_C):freq_C/freq_L:(fenetre_tho(2)*freq_C);
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         
         [~, ~, extension] = fileparts(handles.filename);
-        
+
         if extension == '.mat'
             fichier.ABDd=abdo_L_sur;
             fichier.THOd=thorax_L_sur;
@@ -866,8 +867,10 @@ else
             fichier.delimiterIn_C=fichierLabChart.delimiterIn_C;
             fichier.headerlinesIn_C=fichierLabChart.headerlinesIn_C;
         end
+
         s=fichier;
-        save([handles.dir,'\',handles.filename,'_VisuResp'], '-struct', 's')
+        handles.filename=handles.filename(1:end-4);
+        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
          msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
     end
 end
