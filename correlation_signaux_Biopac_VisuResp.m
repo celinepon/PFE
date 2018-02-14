@@ -1,188 +1,225 @@
-function newSignal = correlation_signaux_Biopac_VisuResp(signalB,signalA,freqB,freqA)
-close all
-
 % Cette fonction permet de rechercher dans un signal (signalA), un autre
-% signal contenant possiblement des artefacts (signalB). Elle retourne
-% la portion de signal (prise sur signalA) correspondante.
+% signal contenant possiblement des artefacts (signalB). Elle crée un nouveau
+% fichiercontenant la portion du signalA correspondante.
+
+function correlation_signaux_Biopac_VisuResp(signalB,signalA,freqB,freqA)
+% DONNNEES ENTREE
+% signalB = vecteur colonne de valeurs
+% signalA = vecteur colonne de valeurs, de taille superieure a la taille du
+% signalB
+% freqB = frequence d'echantillonnage du signalB
+% freqA = frequence d'echantillonnage du signalA
+%
+% DONNNEES SORTIES
+% creation d'un nouveau fichier 'nom_du_signalB_Visuresp'.mat, a la même
+% localisation que le fichier du signalB. Ce nouveau fichier contiendra la
+% portion du signalA correspondante au signalB, a la frequence
+% d'echantillonnage du signalB
+
+% METHODE
+% 1ere partie: calcul du coefficient de correlation entre le signalB et le
+% signalA, en utilisant une fenetre glissante de la taille du signalB, se
+% decalant d'un pas de 10 pourcent de la taille du signalB. La fenetre
+% fournissant le maximum de correlation sera utilisee dans la partie 2.
+% 2e partie: calcul du coefficient de correlation, point par point, entre le signalB et le
+% signalA, en utilisant la fenetre precedemment detectee +/- 10 pourcent de
+% la taille du signalB. Le maximum du coefficient de correlation permet
+% d'etablir la fenetre optimale du signalA correspondant au signalB
+% 3e partie: creation d'un graphe de chacun des coefficents de correlation obtenus
+% dans la partie 1, en fonction des 1-pvalue associer. La selection d'un de ces points
+% entraine le changement de fenetrage du signalA affiche.
+
 h = waitbar(0,'Please wait...');
-signalB=importdata('C:\Users\pc mystere\Documents\data\2016-HOOMIJ\BIOPAC\C2\c2_0005_RIP_Fe100Hz.mat');
-signalA=importdata('C:\Users\pc mystere\Documents\data\2016-HOOMIJ\VISURESP\C2_17_05_2016_SSET.mat');
-signalB=signalB.ABDd;
-signalA=signalA.ABD;
+handles.chemin_nom_signalB='R:\vsld\2018-pfe-polytech-TIS5\c2_0005_RIP_Fe100Hz.mat';
+handles.chemin_nom_signalA='R:\vsld\2018-pfe-polytech-TIS5\C2_17_05_2016_SSET.mat';
+handles.signalB=importdata(handles.chemin_nom_signalB);
+handles.signalA=importdata(handles.chemin_nom_signalA);
+handles.signalB=handles.signalB.ABDd;
+handles.signalA=handles.signalA.ABD;
 
-freqB=100;
-freqA=40
 
-coeff=0;
-fenetre=0;
-debut_fen=0;
-pval=-1;
-t_B=0:1/freqB:(length(signalB)/freqB-1/freqB);
-t_A=0:1/freqA:(length(signalA)/freqA-1/freqA);
+handles.freqB=100;
+handles.freqA=40;
+handles.coeff=0;
+handles.fenetre=0;
+handles.pval=-1;
+handles.t_B=0:1/handles.freqB:(length(handles.signalB)/handles.freqB-1/handles.freqB);
+handles.t_A=0:1/handles.freqA:(length(handles.signalA)/handles.freqA-1/handles.freqA);
+handles.numero=1;
 
 %sous-echantillonnage
-
-t_B2=0:1/freqA:(length(signalB)/freqB-1/freqB);
-signalB_sous= interp1(t_B,signalB,t_B2,'spline');
+handles.t_B2=0:1/handles.freqA:(length(handles.signalB)/handles.freqB-1/handles.freqB);
+handles.signalB_sous= interp1(handles.t_B,handles.signalB,handles.t_B2,'spline');
 
 %calcul 1ere fenetre (pas de 5 pourcent)
-pas=floor(0.05*length(signalB_sous));
+handles.pas=floor(0.05*length(handles.signalB_sous));
 ind=1;
-
-for k=1:pas:length(signalA)-length(signalB_sous)-1
-    
-    [val,p]=corrcoef(signalB_sous,signalA(k:length(signalB_sous)+k-1));
-    coeff(ind)=val(1,2);
-    pval(ind)=1-p(1,2);
-    
+for k=1:handles.pas:length(handles.signalA)-length(handles.signalB_sous)-1
+    [val,p]=corrcoef(handles.signalB_sous,handles.signalA(k:length(handles.signalB_sous)+k-1));
+    handles.coeff(ind)=val(1,2);
+    handles.pval(ind)=1-p(1,2);
     ind=ind+1;
-    
 end
 waitbar(0.3)
 
-%calcul 2e fenetre (point par point) sur la fenetre
+%calcul 2e handles.fenetre (point par point) sur la fenetre
 %trouvee precedemment, + ou - le pas.
-
-indice=find(coeff==max(coeff));
-coefficient_correlation=max(coeff);
+indice=find(handles.coeff==max(handles.coeff));
+handles.coefficient_correlation=max(handles.coeff);
 if indice==1
     debut_fen_inter=1;
-    fin_fen_inter=length(signalB_sous);
+    fin_fen_inter=length(handles.signalB_sous);
 elseif indice==2
-    debut_fen_inter=pas;
-    fin_fen_inter=pas+length(signalB_sous);
-elseif indice==length(coeff)
-    debut_fen_inter=(indice-2)*pas;
-    fin_fen_inter=signalA(end);
+    debut_fen_inter=handles.pas;
+    fin_fen_inter=handles.pas+length(handles.signalB_sous);
+elseif indice==length(handles.coeff)
+    debut_fen_inter=(indice-2)*handles.pas;
+    fin_fen_inter=handles.signalA(end);
 else
-    debut_fen_inter=(indice-2)*pas;
-    fin_fen_inter=(indice)*pas+length(signalB_sous);
+    debut_fen_inter=(indice-2)*handles.pas;
+    fin_fen_inter=(indice)*handles.pas+length(handles.signalB_sous);
 end
 
-coeff_fin=0;
+handles.coeff_fin=0;
 ind=1;
 waitbar(0.5)
-for k=debut_fen_inter:1:fin_fen_inter
+for k=debut_fen_inter:1:fin_fen_inter-length(handles.signalB_sous)
     
-    val=corrcoef(signalB_sous,signalA(k:length(signalB_sous)+k-1));
-    coeff_fin(ind)=val(1,2);
+    val=corrcoef(handles.signalB_sous,handles.signalA(k:length(handles.signalB_sous)+k-1));
+    handles.coeff_fin(ind)=val(1,2);
     
     ind=ind+1;
     
 end
 
 waitbar(1)
+indice_fin=find(handles.coeff_fin==max(handles.coeff_fin));
+handles.coefficient_correlation=max(handles.coeff_fin);
 
-
-indice=find(coeff_fin==max(coeff_fin));
-coefficient_correlation=max(coeff_fin)
-debut_fen=debut_fen_inter+indice(1)-1;
-fin_fen=debut_fen+length(signalB_sous);
-fenetre=[debut_fen/freqA fin_fen/freqA-1/freqA];
-
-signalA_norm=(signalA-(min(signalA)))/(max(signalA)-min(signalA));
-signalB_norm=(signalB_sous-(min(signalB_sous)))/(max(signalB_sous)-min(signalB_sous));
-temps_fenetre=fenetre(1,1):1/freqA:fenetre(1,2);
-temps_fenetreA=max(find(t_A<fenetre(1,1))):1:max(find(t_A<fenetre(1,2)));
-f=figure;
-img=plot(temps_fenetre,signalA_norm(temps_fenetreA),'b');
+% Affichage des 2 signaux superposés
+debut_fen=debut_fen_inter+indice_fin(1)-1;
+fin_fen=debut_fen+length(handles.signalB_sous);
+handles.fenetre=[debut_fen/handles.freqA fin_fen/handles.freqA-1/handles.freqA];
+handles.signalA_norm=(handles.signalA-(min(handles.signalA)))/(max(handles.signalA)-min(handles.signalA));
+handles.signalB_norm=(handles.signalB_sous-(min(handles.signalB_sous)))/(max(handles.signalB_sous)-min(handles.signalB_sous));
+temps_handles.fenetre=handles.fenetre(1,1):1/handles.freqA:handles.fenetre(1,2);
+temps_handles.fenetreA=max(find(handles.t_A<handles.fenetre(1,1))):1:max(find(handles.t_A<handles.fenetre(1,2)));
+handles.f=figure('Name', ['Coefficient de correlation: ', num2str(handles.coefficient_correlation)], 'Position', [50,100, 800,500]);
+plot(temps_handles.fenetre,handles.signalA_norm(temps_handles.fenetreA),'b');
 hold on
-plot(temps_fenetre, signalB_norm,'r');
-
+plot(temps_handles.fenetre, handles.signalB_norm,'r');
 close(h);
-f2=figure;
-scatter_corr= scatter(pval,coeff,'r','filled', 'Marker', 'o','MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [1, 1, 1], 'Tag','Correlation','buttondownfcn','button_down_function(obj,coeff)');
-% scatter_corr_Select = scatter(0,0,'black','filled', 'Marker', 'o', 'MarkerEdgeColor', [0, 0, 0], 'Parent', f2,'Visible','off','buttondownfcn',{@button_down_function});
+uicontrol( ...
+    'Parent', handles.f, ...
+    'Style', 'text', ...
+    'FontSize', 10, ...
+    'String', ['Coefficient de correlation : ',num2str(handles.coefficient_correlation)], ...
+    'Position',[250, 470, 300, 25] ...
+    );
+uicontrol( ...
+    'Parent', handles.f, ...
+    'Style', 'pushbutton', ...
+    'FontSize', 10, ...
+    'String', 'Extraire', ...
+    'Position', [350, 5, 80, 25], ...
+    'Callback', {@valider_correlation,handles} ...
+    );
 
-
+% Affichage des valeurs des coefficients de correlation en fonction des
+% 1-pvalue
+ind_aff=find(handles.coeff>0.5*max(handles.coeff));
+figure('Name','Coefficients/1-pvalue');
+handles.scatter_corr_Select = scatter(handles.pval(indice),handles.coeff(indice),'g','filled', 'Marker', 'o','MarkerFaceAlpha', 1, 'MarkerEdgeColor', [0, 0, 0],'Visible','on','buttondownfcn',{@button_down_function,handles});
+hold on
+scatter(handles.pval(ind_aff),handles.coeff(ind_aff),'r','filled', 'Marker', 'o','MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [1, 1, 1], 'Tag','Correlation','buttondownfcn',{@button_down_function,handles});
 end
 
-function button_down_function(obj,coeff)
+%% Selection de valeurs de coefficients de correlation dur le graphe, et changement de l'affichage de la superposition des signaux
+function button_down_function(obj,~,handles)
 if get(obj, 'Tag')=='Correlation'
-            ps = get(gca, 'CurrentPoint');
-             end
+    ps = get(gca, 'CurrentPoint');
+    indice=find(handles.coeff<ps(1,2)+0.005&handles.coeff>ps(1,2)-0.005);
+    if ~isempty(indice)
+        indice=indice(1);
+        selection_point(indice,handles);
+        r_select=handles.coeff(indice);
+        pval_select=handles.pval(indice);
+        set(handles.scatter_corr_Select,'XData',pval_select,'YData',r_select);
+    end
 end
 
-function selection_point(indice,~)
-         h = waitbar(0,'Please wait...');
-         
-            indice=find(coeff<ps(1,2)+0.001&coeff>ps(1,2)-0.001);
-            if ~isempty(indice)
-            indice=indice(1);
-            selection_point(indice,0);
-            r_select=coeff(indice);
-            pval_select=pval(indice)
-            set(scatter_corr_Select,'XData',pval_select,'YData',r_select,'Visible','on','MarkerFaceColor','r','LineWidth',1)
-         
-        temps_fenetre_tho=-1;
-        fenetre_tho=-1;
-        fenetre_abdo=-1;
-        temps_fenetre_abdo=-1;
+    function selection_point(indice,handles)
+        h = waitbar(0,'Please wait...');
+        temps_handles.fenetre=-1;
+        handles.fenetre=-1;
+        handles.numero=handles.numero+1;
+        
+        %calcul du cefficient de correlation sur la handles.fenetre correspondant
+        %au coefficient selectionne
         if indice==1
             debut_fen_inter=1;
-            fin_fen_inter=length(thorax_L_sous);
+            fin_fen_inter=length(handles.signalB_sous);
         elseif indice==2
-            debut_fen_inter=pas;
-            fin_fen_inter=pas+length(thorax_L_sous);
-        elseif indice==length(r_abdo)
-              debut_fen_inter=(indice-2)*pas;
-                  fin_fen_inter=thorax_C(end);
+            debut_fen_inter=handles.pas;
+            fin_fen_inter=handles.pas+length(handles.signalB_sous);
+        elseif indice==length(handles.coeff)
+            debut_fen_inter=(indice-2)*handles.pas;
+            fin_fen_inter=handles.signalA(:);
         else
-            debut_fen_inter=(indice-2)*pas;
-            fin_fen_inter=(indice)*pas+length(thorax_L_sous);
+            debut_fen_inter=(indice-2)*handles.pas;
+            fin_fen_inter=(indice)*handles.pas+length(handles.signalB_sous);
         end
         waitbar(0.3)
-        r_thorax_fin=0;
-        r_abdo_fin=0;
+        handles.coeff=0;
         ind=1;
-       fin_fen_inter
-       length(thorax_L_sous)
-        length(thorax_C)
-        for k=debut_fen_inter:1:fin_fen_inter
-            val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_thorax_fin(ind)=val(1,2);
-            val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-            r_abdo_fin(ind)=val(1,2);
-            
+        for k=debut_fen_inter:1:fin_fen_inter-length(handles.signalB_sous)
+            val=corrcoef(handles.signalB_sous,handles.signalA(k:length(handles.signalB_sous)+k-1));
+            handles.coeff_fin(ind)=val(1,2);
             ind=ind+1;
         end
+        indice=find(handles.coeff_fin==max(handles.coeff_fin));
+        handles.coefficient_correlation=max(handles.coeff_fin);
         
-        indice_tho =find(r_thorax_fin==max(r_thorax_fin));
-        max_tho=max(r_thorax_fin);
-        debut_fen_tho=debut_fen_inter+indice_tho(1)-1;
-        fin_fen_tho=debut_fen_tho+length(thorax_L_sous);
-        fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C];
+        % Affichage des 2 signaux superposés
+        debut_fen=debut_fen_inter+indice(1)-1;
+        fin_fen=debut_fen+length(handles.signalB_sous);
+        handles.fenetre=[debut_fen/handles.freqA fin_fen/handles.freqA-1/handles.freqA];
         waitbar(0.5)
-        indice_abdo =find(r_abdo_fin==max(r_abdo_fin));
-        max_abdo= max(r_abdo_fin);
-        debut_fen_abdo=debut_fen_inter+indice_abdo(1)-1;
-        fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
-        fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C];
-        
-        if max(r_thorax_fin)<max(r_abdo_fin)
-            debut_fen_tho=debut_fen_abdo;
-            fin_fen_tho=fin_fen_abdo;
-            fenetre_tho=fenetre_abdo;
-            
-        else
-            debut_fen_abdo=debut_fen_tho;
-            fin_fen_abdo=fin_fen_tho;
-            fenetre_abdo=fenetre_tho;
-            
-        end
+        temps_handles.fenetreA=max(find(handles.t_A<handles.fenetre(1,1))):1:max(find(handles.t_A<handles.fenetre(1,2)));
+        temps_handles.fenetre=handles.fenetre(1,1):1/handles.freqA:handles.fenetre(1,2);
+        fig(handles.numero)=figure('Name', ['Coefficient de correlation: ', num2str(handles.coefficient_correlation)], 'Position', [50,100, 800,500]);
+        plot(temps_handles.fenetre,handles.signalA_norm(temps_handles.fenetreA),'b');
+        hold on
+        plot(temps_handles.fenetre, handles.signalB_norm,'r');
+        uicontrol( ...
+            'Parent', fig(handles.numero), ...
+            'Style', 'text', ...
+            'FontSize', 10, ...
+            'String', ['Coefficient de correlation : ', num2str(handles.coefficient_correlation)], ...
+            'Position', [250, 470, 300, 25] ...
+            );
+        uicontrol( ...
+            'Parent', fig(handles.numero), ...
+            'Style', 'pushbutton', ...
+            'FontSize', 10, ...
+            'String', 'Extraire', ...
+            'Position', [350, 5, 80, 25], ...
+            'Callback',{@valider_correlation,handles} ...
+            );
         waitbar(1)
-       
-        temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
-        temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
-        
-        set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
-        set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
-        set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
-        set(line_signalA_Abdo, 'XData', t_C, 'YData', (abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C)))
-        set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
-        set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
-        set(corr_abdo_valeur,'String',round(max_abdo,4))
-        set(corr_thorax_valeur,'String',round(max_tho,4))
-        intercorr_calculee=1;
         close(h)
     end
+end
+
+%% Valider la correlation et extraire le signal VisuResp correspondant
+
+function valider_correlation(obj,~,handles)
+
+t_L2=handles.fenetre(1)*handles.freqA:handles.freqA/handles.freqB:handles.fenetre(2)*handles.freqA;
+signalB_sur= interp1(handles.fenetre(1)*handles.freqA:1:handles.fenetre(2)*handles.freqA,handles.signalA(handles.fenetre(1)*handles.freqA:1:handles.fenetre(2)*handles.freqA),t_L2,'spline');
+figure; plot(signalB_sur)
+hold on
+plot(handles.signalB)
+save([handles.chemin_nom_signalB(1:end-4),'_VisuResp.mat'], 'signalB_sur')
+msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
+end

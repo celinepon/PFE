@@ -9,7 +9,6 @@ xmiddle = scrn_size(3) / 2;
 ymiddle = scrn_size(4) / 2;
 sizex = 1250;
 sizey = 850;
-
 %%%%%%%%%%%%%%%%
 f = figure( ...
     'Name', 'Fenetrage des signaux VisuResp et Biopac', ...
@@ -717,7 +716,7 @@ else
         ind=1;
         for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_tho_fin(ind)=val(1,2);
+            r_thorax_fin(ind)=val(1,2);
             
             ind=ind+1;
         end
@@ -750,7 +749,7 @@ else
 
         set(valider,'enable','on');
         set(corr_abdo_valeur,'String',round(max(r_abdo_fin),4))
-        set(corr_thorax_valeur,'String',round(max(r_tho_fin),4))
+        set(corr_thorax_valeur,'String',round(max(r_thorax_fin),4))
         intercorr_calculee=1;
         
         
@@ -849,8 +848,7 @@ else
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
-        freq_surech=freq_L;
-         
+    
         t_L2=fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C;
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
