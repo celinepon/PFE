@@ -436,7 +436,6 @@ maxi_val=-1;
         
     end
 
-% When mouse button is released
     function button_up_function(~, ~)
         handles.grabbed=-1;
     end
@@ -606,12 +605,7 @@ if get(freqLab,'String')=='1'
      msgbox('La fréquence des fichiers Biopac est incorrecte.', 'Title', 'help')
 else
      h = waitbar(0,'Please wait...');
-    r_thorax_zone1='';
-        r_abdo_zone1='';
-        r_thorax_zone2='';
-        r_abdo_zone2='';
-        r_thorax_zone3='';
-        r_abdo_zone3='';
+   
         r_thorax=0;
         r_abdo=0;
         val='';
@@ -666,7 +660,7 @@ else
             fin_fen_inter_tho=pas+length(thorax_L_sous);
         elseif indice_tho==length(r_abdo)
             debut_fen_inter_tho=(indice_tho-2)*pas;
-            fin_fen_inter_tho=(indice_tho-1)*pas+length(thorax_L_sous);
+            fin_fen_inter_tho=thorax_C(end);
         else
             debut_fen_inter_tho=(indice_tho-2)*pas;
             fin_fen_inter_tho=(indice_tho)*pas+length(thorax_L_sous);
@@ -679,7 +673,7 @@ else
             fin_fen_inter_abdo=pas+length(abdomen_L_sous);
         elseif indice_abdo==length(r_abdo)
             debut_fen_inter_abdo=(indice_abdo-2)*pas;
-            fin_fen_inter_abdo=(indice_abdo-1)*pas+length(thorax_L_sous);
+            fin_fen_inter_abdo=thorax_C(end);
         else
             debut_fen_inter_abdo=(indice_abdo-2)*pas;
             fin_fen_inter_abdo=(indice_abdo)*pas+length(abdomen_L_sous);
@@ -793,7 +787,7 @@ else
             fin_fen_inter=pas+length(thorax_L_sous);
         elseif indice==length(r_abdo)
               debut_fen_inter=(indice-2)*pas;
-            fin_fen_inter=(indice-1)*pas+length(thorax_L_sous);
+                  fin_fen_inter=thorax_C(end);
         else
             debut_fen_inter=(indice-2)*pas;
             fin_fen_inter=(indice)*pas+length(thorax_L_sous);
