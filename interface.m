@@ -9,7 +9,6 @@ xmiddle = scrn_size(3) / 2;
 ymiddle = scrn_size(4) / 2;
 sizex = 1250;
 sizey = 850;
-
 %%%%%%%%%%%%%%%%
 f = figure( ...
     'Name', 'Fenetrage des signaux VisuResp et Biopac', ...
@@ -85,7 +84,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver corrÃƒÂ©lation
+% Trouver corrÃƒÆ’Ã‚Â©lation
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -93,7 +92,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, widthsignal, 70] ...
     );
-% valeurs de corrÃƒÂ©lation obtenues
+% valeurs de corrÃƒÆ’Ã‚Â©lation obtenues
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -367,7 +366,7 @@ maxi_pval=-1;
 maxi_val=-1;
 
 %fonctions appelees dans le code precedent
-%% Drag and Drop des signaux superpos�s lors de l'intercorrelation
+%% Drag and Drop des signaux superposés lors de l'intercorrelation
 
     function button_down_function(obj, ~)
         if get(obj, 'Tag')=='Tho'&intercorr_calculee
@@ -543,7 +542,7 @@ maxi_val=-1;
                 thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),3);
                 abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),4);
             else
-                msgbox('Le contenu de ce fichier .mat n"est pas structure de façon adequate (data.data) ', 'Title', 'help')
+                msgbox('Le contenu de ce fichier .mat n"est pas structure de faÃ§on adequate (data.data) ', 'Title', 'help')
             end
         elseif extension == '.rcg'
             delimiterIn_C = '\t';
@@ -602,7 +601,7 @@ maxi_val=-1;
     function calcul_correlation(source,eventdata)
 tic        
 if get(freqLab,'String')=='1'
-     msgbox('La fr�quence des fichiers Biopac est incorrecte.', 'Title', 'help')
+     msgbox('La fréquence des fichiers Biopac est incorrecte.', 'Title', 'help')
 else
      h = waitbar(0,'Please wait...');
    
@@ -776,7 +775,7 @@ end
     toc
     end
 % Changement de fenetre en fonction du point (coefficient-pvalue)
-% s�lectionn�
+% sélectionné
 
     function selection_point(indice,~)
          h = waitbar(0,'Please wait...');
@@ -854,9 +853,9 @@ end
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
-        freq_surech=freq_L;
-        
-        t_L2=(fenetre_tho(1)*freq_C):freq_C/freq_L:(fenetre_tho(2)*freq_C);
+
+        t_L2=fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C;
+
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         
@@ -875,6 +874,6 @@ end
         s=fichier;
         handles.filename=handles.filename(1:end-4);
         save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
-         msgbox('Le signal de Biopac a �t� remplac� avec succ�s', 'Title', 'help')
+         msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
     end
 end
