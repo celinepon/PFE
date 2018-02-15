@@ -632,7 +632,6 @@ else
         thorax_L_sous= interp1(t_L,thorax_L,t_L2,'spline');
         abdomen_L_sous= interp1(t_L,abdomen_L,t_L2,'spline');
         
-
         %calcul 1ere fenetre (pas de 5 pourcent)
         pas=floor(0.05*length(thorax_L_sous));
         ind=1;
@@ -767,8 +766,8 @@ else
         set(scatter_corr_Abdo,'XData',pval_abdo,'YData',r_abdo,'Visible','on')
         set(scatter_corr_Thorax,'XData',pval_tho,'YData',r_thorax,'Visible','on')
         set(scatter_corr_Select,'XData',pval_tho,'YData',r_thorax,'Visible','off')
-        fenetre_corr_x=[0.99*maxi_pval maxi_pval*1.01];
-        fenetre_corr_y=[0.8*maxi_val maxi_val*1.01];
+        fenetre_corr_x=[0.99*abs(maxi_pval) abs(maxi_pval)*1.01]
+        fenetre_corr_y=[0.8*maxi_val maxi_val*1.01]
         set(axe_corr,'XLim',fenetre_corr_x,'YLim',fenetre_corr_y)
         if a==1
             set(scatter_corr_Select,'XData',pval_abdo(indice_abdo),'YData',r_abdo(indice_abdo),'Visible','on','MarkerFaceColor','r','LineWidth',1)
@@ -777,6 +776,7 @@ else
         end
         
         axe_corr.XAxis.TickValuesMode ='auto';
+        axe_corr.YAxis.TickValuesMode ='auto';
         close(h);
 end
     toc
@@ -860,17 +860,15 @@ end
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
+
           h = waitbar(0,'Please wait...');
-length(thorax_L)
+
         t_L2=fenetre_tho(1)*freq_C:freq_C/freq_L:fenetre_tho(2)*freq_C;
+
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         [~, ~, extension] = fileparts(handles.filename);
-length(thorax_L_sur)
-figure;
-plot(thorax_L,'r')
-hold on
-plot(thorax_L_sur,'b')
+
  waitbar(0.5)
         if extension == '.mat'
             if isfield(fichierLabChart,'data')
@@ -891,9 +889,10 @@ plot(thorax_L_sur,'b')
 waitbar(0.8)
         s=fichier;
         handles.filename=handles.filename(1:end-4);
-        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp\c4_VisuResp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
+        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
         close(h)
          msgbox('Le signal de Biopac a ete remplace avec succes', 'Title', 'help')
          
+
     end
 end
