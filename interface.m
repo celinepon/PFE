@@ -84,7 +84,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver corrÃƒÆ’Ã‚Â©lation
+% Trouver correlation
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -92,7 +92,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, widthsignal, 70] ...
     );
-% valeurs de corrÃƒÆ’Ã‚Â©lation obtenues
+% valeurs de correlation obtenues
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -182,7 +182,6 @@ temps_corr = uicontrol(...
 listedossier = uicontrol(...
     'Parent',prepertoire,...
     'Style','listbox',...
-    'String','fichier',...
     'Position',[23 160 300 240],...
     'Callback',{@filelist_callback});
 
@@ -458,9 +457,13 @@ maxi_val=-1;
             files = struct2cell(dir(search_name));
             files2=struct2cell(dir(search_name2));
             handles.file_list = [files(1,:),files2(1,:)]';
-            set(listedossier,'String', handles.file_list);
-            handles.filename = char(handles.file_list(1));
-            set(OK,'Enable','on')
+            if length(handles.file_list)~=0
+                set(listedossier,'String', handles.file_list);
+                handles.filename = char(handles.file_list(1));
+                set(OK,'Enable','on')
+            else
+                msgbox('Le dossier selectionne ne contient pas de fichier .mat ou .rcg', 'Title', 'help')
+            end
         end
         intercorr_calculee=0;
     end
@@ -542,7 +545,7 @@ maxi_val=-1;
                 thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),3);
                 abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),4);
             else
-                msgbox('Le contenu de ce fichier .mat n"est pas structure de faÃ§on adequate (data.data) ', 'Title', 'help')
+                msgbox('Le contenu de ce fichier .mat n"est pas structure de facon adequate (data.data) ', 'Title', 'help')
             end
         elseif extension == '.rcg'
             delimiterIn_C = '\t';
@@ -564,13 +567,19 @@ maxi_val=-1;
         
         set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
         set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
+         set(line_signalA_Abdo_super,'Visible','off')
+         set(line_signalA_Thorax_super,'Visible','off')
         set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
         set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
         axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
         axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
         axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
         axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
-        
+        set(valider,'enable','off');
+       if length(thorax_C)>2
+           set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
+        set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
+       end
         if  length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
@@ -591,6 +600,7 @@ maxi_val=-1;
         set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
         set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
         set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
+        set(valider,'enable','off');
         if length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
@@ -850,28 +860,39 @@ end
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
-        taillethoBiop=length(thorax_L)
-        
+
+          h = waitbar(0,'Please wait...');
+
         t_L2=fenetre_tho(1)*freq_C:freq_C/freq_L:fenetre_tho(2)*freq_C;
 
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
-        
         [~, ~, extension] = fileparts(handles.filename);
 
+ waitbar(0.5)
         if extension == '.mat'
+            if isfield(fichierLabChart,'data')
+                fichier.hdr=fichierLabChart.hdr;
+                fichier.markers=fichierLabChart.markers;
+                  fichier.data(1:length(thorax_L_sur),3)=thorax_L_sur;
+            fichier.data(1:length(abdo_L_sur),2)=abdo_L_sur;
+            else
             fichier.ABDd=abdo_L_sur;
             fichier.THOd=thorax_L_sur;
+            end
         else extension=='.rcg'
             fichier.data(l:length(thorax_L_sur),1)=thorax_L_sur;
             fichier.data(l:length(abdo_L_sur),2)=abdo_L_sur;
             fichier.delimiterIn_C=fichierLabChart.delimiterIn_C;
             fichier.headerlinesIn_C=fichierLabChart.headerlinesIn_C;
         end
-
+waitbar(0.8)
         s=fichier;
         handles.filename=handles.filename(1:end-4);
-        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp\c4_Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
+        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
+        close(h)
          msgbox('Le signal de Biopac a ete remplace avec succes', 'Title', 'help')
+         
+
     end
 end

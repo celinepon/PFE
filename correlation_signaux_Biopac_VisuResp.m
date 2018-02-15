@@ -217,9 +217,9 @@ function valider_correlation(obj,~,handles)
 
 t_L2=handles.fenetre(1)*handles.freqA:handles.freqA/handles.freqB:handles.fenetre(2)*handles.freqA;
 signalB_sur= interp1(handles.fenetre(1)*handles.freqA:1:handles.fenetre(2)*handles.freqA,handles.signalA(handles.fenetre(1)*handles.freqA:1:handles.fenetre(2)*handles.freqA),t_L2,'spline');
-figure; plot(signalB_sur)
-hold on
-plot(handles.signalB)
 save([handles.chemin_nom_signalB(1:end-4),'_VisuResp.mat'], 'signalB_sur')
-msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
+h = questdlg('Le signal de Biopac a été remplacé avec succès. Voulez-vous fermer les fenetres?','Success');
+if strcmp(h,'Yes')
+close all
+end
 end
