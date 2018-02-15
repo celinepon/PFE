@@ -84,7 +84,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver corrÃƒÂ©lation
+% Trouver corrÃƒÆ’Ã‚Â©lation
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -92,7 +92,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, widthsignal, 70] ...
     );
-% valeurs de corrÃƒÂ©lation obtenues
+% valeurs de corrÃƒÆ’Ã‚Â©lation obtenues
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -366,7 +366,7 @@ maxi_pval=-1;
 maxi_val=-1;
 
 %fonctions appelees dans le code precedent
-%% Drag and Drop des signaux superpos�s lors de l'intercorrelation
+%% Drag and Drop des signaux superposés lors de l'intercorrelation
 
     function button_down_function(obj, ~)
         if get(obj, 'Tag')=='Tho'&intercorr_calculee
@@ -542,7 +542,7 @@ maxi_val=-1;
                 thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),3);
                 abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),4);
             else
-                msgbox('Le contenu de ce fichier .mat n"est pas structure de façon adequate (data.data) ', 'Title', 'help')
+                msgbox('Le contenu de ce fichier .mat n"est pas structure de faÃ§on adequate (data.data) ', 'Title', 'help')
             end
         elseif extension == '.rcg'
             delimiterIn_C = '\t';
@@ -599,9 +599,9 @@ maxi_val=-1;
 %% Intercorrelation
 
     function calcul_correlation(source,eventdata)
-       
+tic        
 if get(freqLab,'String')=='1'
-     msgbox('La fr�quence des fichiers Biopac est incorrecte.', 'Title', 'help')
+     msgbox('La fréquence des fichiers Biopac est incorrecte.', 'Title', 'help')
 else
      h = waitbar(0,'Please wait...');
    
@@ -615,7 +615,7 @@ else
         pval_tho=-1;
         pval_abdo=-1;
         %sous-echantillonnage
-
+        
         freq_surech=freq_C;
         t_L2=0:1/freq_surech:(length(thorax_L)/freq_L-1/freq_L);
         
@@ -624,7 +624,7 @@ else
         
 
         %calcul 1ere fenetre (pas de 5 pourcent)
-        pas=floor(0.05*length(thorax_L_sous));
+        pas=floor(0.05*length(thorax_L_sous))
         ind=1;
      
         for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
@@ -645,7 +645,8 @@ else
         %calcul 2e fenetre (point par point) sur la fenetre
         %trouvee precedemment, + ou - le pas.
         
-        indice_tho =find(r_thorax==max(r_thorax));
+        indice_tho =find(r_thorax==max(r_thorax))
+        length(r_thorax)
         maxi_val=max(max(r_abdo),max(r_thorax));
         max_tho=max(r_thorax);
         max_abdo=max(r_abdo);
@@ -661,8 +662,10 @@ else
             debut_fen_inter_tho=(indice_tho-2)*pas;
             fin_fen_inter_tho=thorax_C(end);
         else
-            debut_fen_inter_tho=(indice_tho-2)*pas;
-            fin_fen_inter_tho=(indice_tho)*pas+length(thorax_L_sous);
+            debut_fen_inter_tho=(indice_tho-2)*pas
+            tailleL=length(thorax_L_sous)
+            fin_fen_inter_tho=debut_fen_inter_tho+length(thorax_L_sous)+pas
+            length(thorax_C)
         end
         if indice_abdo==1
             debut_fen_inter_abdo=1;
@@ -675,13 +678,14 @@ else
             fin_fen_inter_abdo=thorax_C(end);
         else
             debut_fen_inter_abdo=(indice_abdo-2)*pas;
-            fin_fen_inter_abdo=(indice_abdo)*pas+length(abdomen_L_sous);
+            fin_fen_inter_abdo=debut_fen_inter_abdo+pas+length(abdomen_L_sous);
         end
         r_thorax_fin=0;
         r_abdo_fin=0;
         ind=1;
         waitbar(0.5)
-        for k=debut_fen_inter_tho:1:fin_fen_inter_tho
+        for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
+            
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
             r_thorax_fin(ind)=val(1,2);
             
@@ -689,7 +693,7 @@ else
         end
         
         ind=1;
-        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
+        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(abdomen_L_sous)
             val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
             r_abdo_fin(ind)=val(1,2);
             
@@ -714,7 +718,7 @@ else
             fin_fen_tho=fin_fen_abdo;
             fenetre_tho=fenetre_abdo;  
         ind=1;
-        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo
+        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(thorax_L_sous)
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
             r_thorax_fin(ind)=val(1,2);
             
@@ -727,7 +731,7 @@ else
             fin_fen_abdo=fin_fen_tho;
             fenetre_abdo=fenetre_tho;
               ind=1;
-        for k=debut_fen_inter_tho:1:fin_fen_inter_tho
+        for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
             val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
             r_abdo_fin(ind)=val(1,2);
             
@@ -767,10 +771,11 @@ else
         
         axe_corr.XAxis.TickValuesMode ='auto';
         close(h);
-    end
+end
+    toc
     end
 % Changement de fenetre en fonction du point (coefficient-pvalue)
-% s�lectionn�
+% sélectionné
 
     function selection_point(indice,~)
          h = waitbar(0,'Please wait...');
@@ -796,7 +801,7 @@ else
         r_abdo_fin=0;
         ind=1;
 
-        for k=debut_fen_inter:1:fin_fen_inter
+        for k=debut_fen_inter:1:fin_fen_inter-length(thorax_L_sous)
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
             r_thorax_fin(ind)=val(1,2);
             val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
@@ -848,13 +853,14 @@ else
 %Valider et exporter la zone correpondant au Biopac dans le VisuResp
 
     function valider_correlation(~,~)
-    
+
         t_L2=fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C;
+
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         
         [~, ~, extension] = fileparts(handles.filename);
-        
+
         if extension == '.mat'
             fichier.ABDd=abdo_L_sur;
             fichier.THOd=thorax_L_sur;
@@ -864,8 +870,10 @@ else
             fichier.delimiterIn_C=fichierLabChart.delimiterIn_C;
             fichier.headerlinesIn_C=fichierLabChart.headerlinesIn_C;
         end
+
         s=fichier;
-        save([handles.dir,'\',handles.filename,'_VisuResp'], '-struct', 's')
-         msgbox('Le signal de Biopac a �t� remplac� avec succ�s', 'Title', 'help')
+        handles.filename=handles.filename(1:end-4);
+        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
+         msgbox('Le signal de Biopac a été remplacé avec succès', 'Title', 'help')
     end
 end
