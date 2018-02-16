@@ -1,9 +1,29 @@
-function interface
-clear all
-close all
-clc
+% Cette fonction permet de rechercher dans un signal (signalA), un autre
+% signal contenant possiblement des artefacts (signalB). Elle crée un nouveau
+% fichiercontenant la portion du signalA correspondante.
 
-%% Create GUI structure
+function interface_correlation_signaux_Biopac_VisuResp
+
+% DONNNEES SORTIES
+% creation d'un nouveau fichier 'nom_du_signalB_Visuresp'.mat, a la même
+% localisation que le fichier du signalB. Ce nouveau fichier contiendra la
+% portion du signalA correspondante au signalB, a la frequence
+% d'echantillonnage du signalB
+
+% METHODE
+% 1ere partie: calcul du coefficient de correlation entre le signalB et le
+% signalA, en utilisant une fenetre glissante de la taille du signalB, se
+% decalant d'un pas de 10 pourcent de la taille du signalB. La fenetre
+% fournissant le maximum de correlation sera utilisee dans la partie 2.
+% 2e partie: calcul du coefficient de correlation, point par point, entre le signalB et le
+% signalA, en utilisant la fenetre precedemment detectee +/- 10 pourcent de
+% la taille du signalB. Le maximum du coefficient de correlation permet
+% d'etablir la fenetre optimale du signalA correspondant au signalB
+% 3e partie: creation d'un graphe de chacun des coefficents de correlation obtenus
+% dans la partie 1, en fonction des 1-pvalue associer. La selection d'un de ces points
+% entraine le changement de fenetrage du signalA affiche.
+
+%% Cree l'interface utilsateur
 scrn_size = get(0, 'ScreenSize');
 xmiddle = scrn_size(3) / 2;
 ymiddle = scrn_size(4) / 2;
@@ -17,19 +37,12 @@ f = figure( ...
     'NumberTitle', 'Off' ...
     );
 
-%%%%%%%%%%%%%%%%%
-%               %
-%   Panel for   %
-%    signals    %
-%               %
-%%%%%%%%%%%%%%%%%
-
-% variabe used to place the panel that will display the 4 waves
 widthsignal = 810;
 heightsignal = 380;
 
 
 %%%%%%%%%%%%%%%%%%%%%% Panels
+% panel des signaux du Biopac
 psignalB = uipanel( ...
     'Parent', f, ...
     'Title', 'Signal Biopac (signal B)', ...
@@ -37,6 +50,7 @@ psignalB = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 465, widthsignal, heightsignal] ...
     );
+% panel du signal thoracique du Biopac
 psignalBthorax = uipanel( ...
     'Parent', psignalB, ...
     'Title', 'Signal Thorax', ...
@@ -44,6 +58,7 @@ psignalBthorax = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 185, 800, 180] ...
     );
+% panel du signal abdominal du Biopac
 psignalBabdo = uipanel( ...
     'Parent', psignalB, ...
     'Title', 'Signal Abdomen', ...
@@ -51,7 +66,7 @@ psignalBabdo = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 5, 800, 180] ...
     );
-
+% panel des signaux du VisuResp
 psignalA = uipanel( ...
     'Parent', f, ...
     'Title', 'Signal VisuResp (signal A)', ...
@@ -59,7 +74,7 @@ psignalA = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 80, widthsignal, heightsignal] ...
     );
-
+% panel du signal thoracique du VisuResp
 psignalAthorax = uipanel( ...
     'Parent', psignalA, ...
     'Title', 'Signal Thorax', ...
@@ -67,6 +82,7 @@ psignalAthorax = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 185, 800, 180] ...
     );
+% panel du signal abdominal du VisuResp
 psignalAabdo = uipanel( ...
     'Parent', psignalA, ...
     'Title', 'Signal Abdomen', ...
@@ -74,8 +90,7 @@ psignalAabdo = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 5, 800, 180] ...
     );
-
-%Panel Repertoire des fichiers
+% panel du répertoire
 prepertoire = uipanel( ...
     'Parent', f, ...
     'Title', 'Repertoire', ...
@@ -84,7 +99,7 @@ prepertoire = uipanel( ...
     'Position', [850, 370, 350, 480] ...
     );
 
-% Trouver correlation
+% panel des boutons de correlation
 pcorrelation = uipanel( ...
     'Parent', f, ...
     'Title', 'Correlation', ...
@@ -92,7 +107,7 @@ pcorrelation = uipanel( ...
     'Fontsize', 9, ...
     'Position', [5, 10, widthsignal, 70] ...
     );
-% valeurs de correlation obtenues
+% panel des coefficients de correlation
 pvaleur = uipanel( ...
     'Parent', f, ...
     'Title', 'Valeurs', ...
@@ -103,7 +118,7 @@ pvaleur = uipanel( ...
 
 %%%%%%%%%%%%%%%%%%%%% Axes des grapghes
 
-%Graph signal B thorax
+%Graphe du signal B thorax
 axe_signal_B_Thorax = axes( ...
     'Parent', psignalBthorax, ...
     'Units', 'Pixels', ...
@@ -112,10 +127,11 @@ axe_signal_B_Thorax = axes( ...
     'XTick', [], ...
     'Position', [30, 25, 700, 130] ...
     );
-temps_B_thorax = uicontrol('Parent',psignalBthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
+%temps_B_thorax = 
+uicontrol('Parent',psignalBthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
 
-%Graph signal B abdomen
+%Graphe du signal B abdomen
 axe_signal_B_Abdo = axes( ...
     'Parent', psignalBabdo, ...
     'Units', 'Pixels', ...
@@ -124,10 +140,11 @@ axe_signal_B_Abdo = axes( ...
     'XTick', [], ...
     'Position', [30, 25, 700, 130] ...
     );
-temps_B_abdo = uicontrol('Parent',psignalBabdo,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
+%temps_B_abdo = 
+uicontrol('Parent',psignalBabdo,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
 
-%Graph signal A thorax
+%Graphe du signal A thorax
 axe_signal_A_Thorax = axes( ...
     'Parent', psignalAthorax, ...
     'Units', 'Pixels', ...
@@ -137,9 +154,10 @@ axe_signal_A_Thorax = axes( ...
     'Tag','Tho',...
     'Position', [30, 25, 700, 130] ...
     );
-temps_A_thorax = uicontrol('Parent',psignalAthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
+%temps_A_thorax = 
+uicontrol('Parent',psignalAthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
-%Graph signal A abdomen
+%Graphe du signal A abdomen
 axe_signal_A_Abdo = axes( ...
     'Parent', psignalAabdo, ...
     'Units', 'Pixels', ...
@@ -150,14 +168,15 @@ axe_signal_A_Abdo = axes( ...
     'Position', [30, 25, 700, 130] ...
     );
 
-temps_A_abdo = uicontrol(...
+%temps_A_abdo = 
+uicontrol(...
     'Parent',psignalAabdo,...
     'Style','text',...
     'FontSize',8,...
     'String','temps (s)',...
     'Position',[735 14 60 25]);
 
-% Graphe correlation
+% Graphe des coefficients de correlation
 axe_corr = axes( ...
     'Parent', pvaleur , ...
     'Units', 'Pixels', ...
@@ -169,13 +188,15 @@ axe_corr = axes( ...
     'Position', [40, 40, 380, 260] ...
     );
 
-temps_corr = uicontrol(...
+%temps_corr = 
+uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
     'FontSize',8,...
     'String','1-pvalue',...
     'Position',[350 6 50 13]);
-%%%%%%%%%%%%%%%%%%%%% Buttons
+
+%%%%%%%%%%%%%%%%%%%%% Boutons
 
 %affiche les fichiers presents dans le dossier selectionne
 
@@ -185,7 +206,9 @@ listedossier = uicontrol(...
     'Position',[23 160 300 240],...
     'Callback',{@filelist_callback});
 
-selectdossierBiopac = uicontrol(...
+% selectionne le dossier des fichiers Biopac
+%selectdossierBiopac = 
+uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
     'FontSize',9,...
@@ -193,8 +216,9 @@ selectdossierBiopac = uicontrol(...
     'Position',[50 415 250 40],...
     'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
     'Callback',{@selectdir_callback});
-
-selectfichierVisurep = uicontrol(...
+%selectionne le ficher VisuResp
+%selectfichierVisurep = 
+uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
     'FontSize',9,...
@@ -202,7 +226,7 @@ selectfichierVisurep = uicontrol(...
     'Position',[53 50 250 40],...
     'ToolTipString', 'Selectionnez un fichier de type .rcg sortant de Visuresp',...
     'Callback',{@selectfile_callback});
-
+% charge le signal Biopac selectionne dans le repertoire
 OK = uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
@@ -212,7 +236,7 @@ OK = uicontrol(...
     'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
     'enable','off',...
     'Callback',{@afficherGraph});
-
+% affiche le chemin du fichier visuresp selectionne
 cheminfichierVisuresp = uicontrol(...
     'Parent',prepertoire,...
     'Style','text',...
@@ -221,7 +245,7 @@ cheminfichierVisuresp = uicontrol(...
     'Position',...
     [10 13 330 27],...
     'BackgroundColor','w');
-
+% lance la recherche du maximum des coefficients de correlation
 lancercorrelation = uicontrol(...
     'Parent',pcorrelation,...
     'Style','pushbutton',...
@@ -229,8 +253,9 @@ lancercorrelation = uicontrol(...
     'String','Trouver correlation',...
     'Position',[100 10 180 40],...
     'enable','off',...
-    'Callback',{@calcul_correlation}); %appeler fonction correlation
-
+    'Callback',{@calcul_correlation});
+% valide et extrait la fenetre du signal du VisuResp correspondant au
+% signal Biopac
 valider = uicontrol(...
     'Parent',pcorrelation,...
     'Style','pushbutton',...
@@ -239,9 +264,11 @@ valider = uicontrol(...
     'Position',[500 10 100 40],...
     'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les sequences Visuresp et Biopac',...
-    'Callback',{@valider_correlation}); %appeler fonction pour changer les fichiers Biopac par Visurep
-
-corr_thorax_text = uicontrol(...
+    'Callback',{@valider_correlation}); 
+%affiche la valeur maximum du coefficient de correlation des signaux
+%thoraciques
+%corr_thorax_text =
+uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
     'FontSize',9,...
@@ -254,8 +281,10 @@ corr_thorax_valeur = uicontrol(...
     'FontSize',9,...
     'String','',...
     'Position',[120 305 50 25]);
-
-corr_abdo_text = uicontrol(...
+%affiche la valeur maximum du coefficient de correlation des signaux
+%abdominaux
+%corr_abdo_text = 
+uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
     'FontSize',9,...
@@ -269,7 +298,8 @@ corr_abdo_valeur = uicontrol(...
     'FontSize',9,...
     'Position',[330 305 50 25]);
 
-
+% zone de texte concernant la frequence d'echantillonnage des signaux
+% Biopac
 freqLab = uicontrol(...
     'Parent',psignalBthorax,...
     'Style','edit',...
@@ -278,14 +308,15 @@ freqLab = uicontrol(...
     'Position',[735 100 60 25],...
     'Callback',{@afficherGraph});
 
-freqechB = uicontrol(...
+%freqechB =
+uicontrol(...
     'Parent',psignalBthorax,...
     'Style','text',...
     'FontSize',9,...
     'String','Fech (Hz) : ',...
     'Position',[735 125 60 25]);
-%
-
+% zone de texte concernant la frequence d'echantillonnage des signaux
+% VisuResp
 freqVisu = uicontrol(...
     'Parent',psignalAthorax,...
     'Style','edit',...
@@ -294,14 +325,13 @@ freqVisu = uicontrol(...
     'Position',[735 100 60 25],...
     'Callback',{@afficherVisurep});
 
-freqechA = uicontrol(...
+%freqechA = 
+uicontrol(...
     'Parent',psignalAthorax,...
     'Style','text',...
     'FontSize',9,...
     'String','Fech (Hz) : ',...
     'Position',[735 125 60 25]);
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
@@ -328,6 +358,7 @@ set([axe_signal_A_Thorax, axe_signal_A_Abdo,axe_corr], 'buttondownfcn', {@button
 set(f, 'WindowButtonUpFcn', {@button_up_function});
 set(f, 'WindowButtonMotionFcn', {@button_motion_function});
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Initialisation des variables
 handles.dir='';
 handles.file_list='';
 handles.filename='';
@@ -364,9 +395,11 @@ pas=-1;
 maxi_pval=-1;
 maxi_val=-1;
 
-%fonctions appelees dans le code precedent
-%% Drag and Drop des signaux superposÃ©s lors de l'intercorrelation
+%% Drag and Drop des signaux superposes lors de l'intercorrelation
 
+%fonction declenche lors d'un clic (bouton enfonce) sur les graohe du
+%visuresp, le graphe des coefficients de correlation et sur les points des
+%coefficients de correlation, apres calcul de la correlation.
     function button_down_function(obj, ~)
         if get(obj, 'Tag')=='Tho'&intercorr_calculee
             handles.grabbed=1;
@@ -380,36 +413,34 @@ maxi_val=-1;
             handles.grabbed=3;
             ps = get(gca, 'CurrentPoint');
             indice=find(r_abdo<ps(1,2)+0.001&r_abdo>ps(1,2)-0.001);
-             if ~isempty(indice)
-            indice=indice(1);
-            selection_point(indice,0);
-            r_select=r_abdo(indice);
-            pval_select=pval_abdo(indice);
-            set(scatter_corr_Select,'XData',pval_select,'YData',r_select,'Visible','on','MarkerFaceColor','r','LineWidth',1)
-        end
+            if ~isempty(indice)
+                indice=indice(1);
+                selection_point(indice,0);
+                r_select=r_abdo(indice);
+                pval_select=pval_abdo(indice);
+                set(scatter_corr_Select,'XData',pval_select,'YData',r_select,'Visible','on','MarkerFaceColor','r','LineWidth',1)
+            end
         elseif get(obj, 'Tag')=='CoT'&intercorr_calculee
             handles.grabbed=3;
             ps = get(gca,'CurrentPoint');
             indice=find(r_thorax<ps(1,2)+0.001&r_thorax>ps(1,2)-0.001);
             if ~isempty(indice)
-            indice=indice(1);
-            selection_point(indice,0);
-             set(scatter_corr_Select,'XData',pval_tho(indice),'YData',r_thorax(indice),'Visible','on','MarkerFaceColor','b','LineWidth',1)
+                indice=indice(1);
+                selection_point(indice,0);
+                set(scatter_corr_Select,'XData',pval_tho(indice),'YData',r_thorax(indice),'Visible','on','MarkerFaceColor','b','LineWidth',1)
             end
-         elseif get(obj, 'Tag')=='Cor'&intercorr_calculee
-               handles.grabbed=4;
+        elseif get(obj, 'Tag')=='Cor'&intercorr_calculee
+            handles.grabbed=4;
             ps = get(gca, 'CurrentPoint');
             decal2(1,1)=ps(1,1);
-             decal2(1,2)=ps(1,2);
-            
+            decal2(1,2)=ps(1,2);
         end
-            
-        
     end
 
-    function button_motion_function(obj, ~)
-        % Update movie screen marker location
-        
+%fonction declenche lors du deplacement de la souris, en clic enfonce, qui
+%va deplacer l'axe des graphes du visuresp ou l'axe du graphe des
+%coefficent de correlation, selon l'objet selectionne
+    function button_motion_function(~, ~)
         if handles.grabbed==-1 |handles.grabbed==3
         elseif handles.grabbed==2 | handles.grabbed==1
             ps = get(gca, 'CurrentPoint');
@@ -431,9 +462,8 @@ maxi_val=-1;
             decal2(1,1)=ps(1,1);
             decal2(1,2)=ps(1,2);
         end
-        
     end
-
+%fonction declenche a la fin d'un clic (bouton releve)
     function button_up_function(~, ~)
         handles.grabbed=-1;
     end
@@ -447,7 +477,6 @@ maxi_val=-1;
     end
 
 %% Selection du dossier contenant les enregistrements Biopac
-
     function selectdir_callback(~,~)
         dir_name = uigetdir('','Selectionner un dossier de fichier .mat ou .rcg');
         if dir_name ~= 0
@@ -469,7 +498,6 @@ maxi_val=-1;
     end
 
 %% Selection du fichier contenant l'enregistrement continu de Visuresp
-
     function selectfile_callback(~,~)
         [file_name, pathName] = uigetfile({'*.*';'*.mat';'*.rcg'},'Selectionner un fichier VisuResp .mat ou .rcg');
         thorax_C=-1;
@@ -478,7 +506,6 @@ maxi_val=-1;
             file = file_name;
             chemin = strcat(pathName,file_name);
             set(cheminfichierVisuresp,'String', file)
-            
             [~, ~, extension] = fileparts(file);
             if extension == '.mat'
                 fichierComplet=importdata(chemin);
@@ -497,12 +524,10 @@ maxi_val=-1;
                 fichierComplet=importdata(chemin,delimiterIn_C,headerlinesIn_C);
                 thorax_C=fichierComplet.data(1:length(fichierComplet.data),1);
                 abdomen_C=fichierComplet.data(1:length(fichierComplet.data),2);
-                
             else
                 msgbox('Le format de fichier n"est pas supportee, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
             end
             longueur_signal_C=length(thorax_C);
-            
             %affichage
             freq_C=40; %a changer si sur-echantillonnage du signal
             t_C=0:1/freq_C:(longueur_signal_C/freq_C)-1/freq_C;
@@ -516,7 +541,6 @@ maxi_val=-1;
             axe_signal_A_Abdo.XAxis.TickValuesMode ='auto';
             axe_signal_A_Thorax.YAxis.TickValuesMode ='auto';
             axe_signal_A_Abdo.YAxis.TickValuesMode ='auto';
-            
         end
         if length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
@@ -525,16 +549,13 @@ maxi_val=-1;
     end
 
 %% Affichage des signaux
-
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok
     function afficherGraph(~, ~)
         thorax_L=-1;
         abdomen_L=-1;
-        
         filename_L = [handles.dir, '\', handles.filename];
         fichierLabChart= importdata(filename_L);
-        
         [~, ~, extension] = fileparts(handles.filename);
         if extension == '.mat'
             fichierLabChart=importdata(filename_L);
@@ -553,22 +574,18 @@ maxi_val=-1;
             fichierLabChart=importdata(filename_L,delimiterIn_C,headerlinesIn_C);
             thorax_L=fichierLabChart.data(1:length(fichierLabChart.data),1);
             abdomen_L=fichierLabChart.data(1:length(fichierLabChart.data),2);
-            
         else
             msgbox('Le format de fichier n"est pas supporte, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
         end
         longueur_signal_L=length(thorax_L);
         
         %affichage
-        
-        freq_L=str2num(get(freqLab,'string'));
-        
+        freq_L=str2double(get(freqLab,'string'));
         t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
-        
         set(line_signalB_Thorax, 'XData',  t_L, 'YData', thorax_L)
         set(line_signalB_Abdo, 'XData',  t_L, 'YData',abdomen_L)
-         set(line_signalA_Abdo_super,'Visible','off')
-         set(line_signalA_Thorax_super,'Visible','off')
+        set(line_signalA_Abdo_super,'Visible','off')
+        set(line_signalA_Thorax_super,'Visible','off')
         set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
         set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
         axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
@@ -576,26 +593,22 @@ maxi_val=-1;
         axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
         axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
         set(valider,'enable','off');
-       if length(thorax_C)>2
-           set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
-        set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
-       end
+        if length(thorax_C)>2
+            set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
+            set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
+        end
         if  length(thorax_L)>2 & length(thorax_C)>2
             set(lancercorrelation,'enable','on');
         end
-        
     end
 
 %permet d'afficher sur les graphiques les enregistrements du signal A
 %(visresp) en appuyant modifiant la Fech
-    function afficherVisurep(source, eventdata)
+    function afficherVisurep(~, ~)
         longueur_signal_C=length(thorax_C);
-        
         %affichage
-        freq_C=str2num(get(freqVisu,'string'))
+        freq_C=str2double(get(freqVisu,'string'))
         t_C=0:1/freq_C:(longueur_signal_C/freq_C)-1/freq_C;
-        %          mintemps = min(t_C)
-        %          maxtemps = max(t_C)
         set(line_signalA_Thorax, 'XData',  t_C, 'YData', thorax_C)
         set(line_signalA_Abdo, 'XData',  t_C, 'YData', abdomen_C)
         set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
@@ -606,186 +619,161 @@ maxi_val=-1;
         end
     end
 
-%% Intercorrelation
+%% Calcul des coefficients de correlation
 
-    function calcul_correlation(source,eventdata)
-tic        
-if get(freqLab,'String')=='1'
-     msgbox('La frÃ©quence des fichiers Biopac est incorrecte.', 'Title', 'help')
-else
-     h = waitbar(0,'Please wait...');
-   
-        r_thorax=0;
-        r_abdo=0;
-        val='';
-        fenetre_tho=0;
-        fenetre_abdo=0;
-        debut_fen_tho=0;
-        debut_fen_abdo=0;
-        pval_tho=-1;
-        pval_abdo=-1;
-        %sous-echantillonnage
-        
-        freq_surech=freq_C;
-        t_L2=0:1/freq_surech:(length(thorax_L)/freq_L-1/freq_L);
-        
-        thorax_L_sous= interp1(t_L,thorax_L,t_L2,'spline');
-        abdomen_L_sous= interp1(t_L,abdomen_L,t_L2,'spline');
-        
-        %calcul 1ere fenetre (pas de 5 pourcent)
-        pas=floor(0.05*length(thorax_L_sous));
-        ind=1;
-     
-        for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
-
-            [val,p]=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_thorax(ind)=val(1,2);
-            pval_tho(ind)=1-p(1,2);
-            
-            [val,p]=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-            r_abdo(ind)=val(1,2);
-            pval_abdo(ind)=1-p(1,2);
-            
-            ind=ind+1;
-            
-        end
-        waitbar(0.3)
-
-        %calcul 2e fenetre (point par point) sur la fenetre
-        %trouvee precedemment, + ou - le pas.
-        
-        indice_tho =find(r_thorax==max(r_thorax));
-        maxi_val=max(max(r_abdo),max(r_thorax));
-        max_tho=max(r_thorax);
-        max_abdo=max(r_abdo);
-        maxi_pval=max(max(pval_abdo),max(pval_tho));
-        indice_abdo =find(r_abdo==max(r_abdo));
-        if indice_tho==1
-            debut_fen_inter_tho=1;
-            fin_fen_inter_tho=length(thorax_L_sous);
-        elseif indice_tho==2
-            debut_fen_inter_tho=pas;
-            fin_fen_inter_tho=pas+length(thorax_L_sous);
-        elseif indice_tho==length(r_abdo)
-            debut_fen_inter_tho=(indice_tho-2)*pas;
-            fin_fen_inter_tho=thorax_C(end);
+    function calcul_correlation(~,~)
+        if get(freqLab,'String')=='1'
+            msgbox('La frequence des fichiers Biopac est incorrecte.', 'Title', 'help')
         else
-            debut_fen_inter_tho=(indice_tho-2)*pas;
-            fin_fen_inter_tho=debut_fen_inter_tho+length(thorax_L_sous)+pas;
-        end
-        if indice_abdo==1
-            debut_fen_inter_abdo=1;
-            fin_fen_inter_abdo=length(abdomen_L_sous);
-        elseif indice_abdo==2
-            debut_fen_inter_abdo=pas;
-            fin_fen_inter_abdo=pas+length(abdomen_L_sous);
-        elseif indice_abdo==length(r_abdo)
-            debut_fen_inter_abdo=(indice_abdo-2)*pas;
-            fin_fen_inter_abdo=thorax_C(end);
-        else
-            debut_fen_inter_abdo=(indice_abdo-2)*pas;
-            fin_fen_inter_abdo=debut_fen_inter_abdo+pas+length(abdomen_L_sous);
-        end
-        r_thorax_fin=0;
-        r_abdo_fin=0;
-        ind=1;
-        waitbar(0.5)
-        for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
+            h = waitbar(0,'Please wait...');
+            r_thorax=0;
+            r_abdo=0;
+            val='';
+            fenetre_tho=0;
+            fenetre_abdo=0;
+            debut_fen_tho=0;
+            debut_fen_abdo=0;
+            pval_tho=-1;
+            pval_abdo=-1;
             
-            val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_thorax_fin(ind)=val(1,2);
+            %sous-echantillonnage
+            freq_surech=freq_C;
+            t_L2=0:1/freq_surech:(length(thorax_L)/freq_L-1/freq_L);
+            thorax_L_sous= interp1(t_L,thorax_L,t_L2,'spline');
+            abdomen_L_sous= interp1(t_L,abdomen_L,t_L2,'spline');
             
-            ind=ind+1;
-        end
-        
-        ind=1;
-        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(abdomen_L_sous)
-            val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-            r_abdo_fin(ind)=val(1,2);
+            %calcul 1ere fenetre (pas de 5 pourcent)
+            pas=floor(0.05*length(thorax_L_sous));
+            ind=1;
+            for k=1:pas:length(thorax_C)-length(thorax_L_sous)-1
+                [val,p]=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+                r_thorax(ind)=val(1,2);
+                pval_tho(ind)=1-p(1,2);
+                [val,p]=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+                r_abdo(ind)=val(1,2);
+                pval_abdo(ind)=1-p(1,2);
+                ind=ind+1;
+            end
+            waitbar(0.3)
             
-            ind=ind+1;
-        end
-        waitbar(1)
-        
-        indice_tho_fin =find(r_thorax_fin==max(r_thorax_fin));
-  
-        debut_fen_tho=debut_fen_inter_tho+indice_tho_fin(1)-1;
-        fin_fen_tho=debut_fen_tho+length(thorax_L_sous);
-        fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C];
-        indice_abdo_fin =find(r_abdo_fin==max(r_abdo_fin));
-       
-        debut_fen_abdo=debut_fen_inter_abdo+indice_abdo_fin(1)-1;
-        fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
-        fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C];
-        a=-1;
-        if max(r_thorax_fin)<max(r_abdo_fin)
-            a=1;
-            debut_fen_tho=debut_fen_abdo;
-            fin_fen_tho=fin_fen_abdo;
-            fenetre_tho=fenetre_abdo;  
-        ind=1;
-        for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(thorax_L_sous)
-            val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
-            r_thorax_fin(ind)=val(1,2);
+            %calcul 2e fenetre (point par point) sur la fenetre
+            %trouvee precedemment, + ou - le pas.
+            indice_tho =find(r_thorax==max(r_thorax));
+            maxi_val=max(max(r_abdo),max(r_thorax));
+            maxi_pval=max(max(pval_abdo),max(pval_tho));
+            indice_abdo =find(r_abdo==max(r_abdo));
+            if indice_tho==1
+                debut_fen_inter_tho=1;
+                fin_fen_inter_tho=length(thorax_L_sous);
+            elseif indice_tho==2
+                debut_fen_inter_tho=pas;
+                fin_fen_inter_tho=pas+length(thorax_L_sous);
+            elseif indice_tho==length(r_abdo)
+                debut_fen_inter_tho=(indice_tho-2)*pas;
+                fin_fen_inter_tho=thorax_C(end);
+            else
+                debut_fen_inter_tho=(indice_tho-2)*pas;
+                fin_fen_inter_tho=debut_fen_inter_tho+length(thorax_L_sous)+pas;
+            end
+            if indice_abdo==1
+                debut_fen_inter_abdo=1;
+                fin_fen_inter_abdo=length(abdomen_L_sous);
+            elseif indice_abdo==2
+                debut_fen_inter_abdo=pas;
+                fin_fen_inter_abdo=pas+length(abdomen_L_sous);
+            elseif indice_abdo==length(r_abdo)
+                debut_fen_inter_abdo=(indice_abdo-2)*pas;
+                fin_fen_inter_abdo=thorax_C(end);
+            else
+                debut_fen_inter_abdo=(indice_abdo-2)*pas;
+                fin_fen_inter_abdo=debut_fen_inter_abdo+pas+length(abdomen_L_sous);
+            end
+            r_thorax_fin=0;
+            r_abdo_fin=0;
+            ind=1;
+            waitbar(0.5)
+            for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
+                val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+                r_thorax_fin(ind)=val(1,2);
+                ind=ind+1;
+            end
+            ind=1;
+            for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(abdomen_L_sous)
+                val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+                r_abdo_fin(ind)=val(1,2);
+                ind=ind+1;
+            end
+            waitbar(1)
             
-            ind=ind+1;
-        end
-        
-        else
-            a=2;
-            debut_fen_abdo=debut_fen_tho;
-            fin_fen_abdo=fin_fen_tho;
-            fenetre_abdo=fenetre_tho;
-              ind=1;
-        for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
-            val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
-            r_abdo_fin(ind)=val(1,2);
+            % selection de la fenetre presentant le maximum de correlation
+            indice_tho_fin =find(r_thorax_fin==max(r_thorax_fin));
+            debut_fen_tho=debut_fen_inter_tho+indice_tho_fin(1)-1;
+            fin_fen_tho=debut_fen_tho+length(thorax_L_sous);
+            fenetre_tho=[debut_fen_tho/freq_C fin_fen_tho/freq_C-1/freq_C];
+            indice_abdo_fin =find(r_abdo_fin==max(r_abdo_fin));
+            debut_fen_abdo=debut_fen_inter_abdo+indice_abdo_fin(1)-1;
+            fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
+            fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C];
+            a=-1;
+            if max(r_thorax_fin)<max(r_abdo_fin)
+                a=1;
+                fenetre_tho=fenetre_abdo;
+                ind=1;
+                for k=debut_fen_inter_abdo:1:fin_fen_inter_abdo-length(thorax_L_sous)
+                    val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
+                    r_thorax_fin(ind)=val(1,2);
+                    ind=ind+1;
+                end
+            else
+                a=2;
+                fenetre_abdo=fenetre_tho;
+                ind=1;
+                for k=debut_fen_inter_tho:1:fin_fen_inter_tho-length(thorax_L_sous)
+                    val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
+                    r_abdo_fin(ind)=val(1,2);
+                    ind=ind+1;
+                end
+            end
             
-            ind=ind+1;
+            % affichage des signaux Biopacet VisuResp superposes sur la
+            % fenetre adequate
+            temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
+            temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
+            set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)),'Visible','on')
+            set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)),'Visible','on')
+            set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
+            set(line_signalA_Abdo, 'XData', t_C, 'YData', (abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C)))
+            set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
+            set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
+            set(valider,'enable','on');
+            set(corr_abdo_valeur,'String',round(max(r_abdo_fin),4))
+            set(corr_thorax_valeur,'String',round(max(r_thorax_fin),4))
+            intercorr_calculee=1;
+            
+            % affichage du graphe des coefficients de correlation en fonction de la 1-pvaleur
+            set(scatter_corr_Abdo,'XData',pval_abdo,'YData',r_abdo,'Visible','on')
+            set(scatter_corr_Thorax,'XData',pval_tho,'YData',r_thorax,'Visible','on')
+            set(scatter_corr_Select,'XData',pval_tho,'YData',r_thorax,'Visible','off')
+            fenetre_corr_x=[0.99*abs(maxi_pval) abs(maxi_pval)*1.01];
+            fenetre_corr_y=[0.8*maxi_val maxi_val*1.01];
+            set(axe_corr,'XLim',fenetre_corr_x,'YLim',fenetre_corr_y)
+            if a==1
+                set(scatter_corr_Select,'XData',pval_abdo(indice_abdo),'YData',r_abdo(indice_abdo),'Visible','on','MarkerFaceColor','r','LineWidth',1)
+            else
+                set(scatter_corr_Select,'XData',pval_tho(indice_tho),'YData',r_thorax(indice_tho),'Visible','on','MarkerFaceColor','b','LineWidth',1)
+            end
+            axe_corr.XAxis.TickValuesMode ='auto';
+            axe_corr.YAxis.TickValuesMode ='auto';
+            close(h);
         end
-        end
-        
-        temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
-        temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
-        
-        set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)),'Visible','on')
-        set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)),'Visible','on')
-        set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
-        set(line_signalA_Abdo, 'XData', t_C, 'YData', (abdomen_C-(min(abdomen_C)))/(max(abdomen_C)-min(abdomen_C)))
-        
-        set(axe_signal_A_Thorax, 'XLim', fenetre_tho)
-        set(axe_signal_A_Abdo, 'XLim', fenetre_abdo)
-    
-
-        set(valider,'enable','on');
-        set(corr_abdo_valeur,'String',round(max(r_abdo_fin),4))
-        set(corr_thorax_valeur,'String',round(max(r_thorax_fin),4))
-        intercorr_calculee=1;
-        
-        
-        set(scatter_corr_Abdo,'XData',pval_abdo,'YData',r_abdo,'Visible','on')
-        set(scatter_corr_Thorax,'XData',pval_tho,'YData',r_thorax,'Visible','on')
-        set(scatter_corr_Select,'XData',pval_tho,'YData',r_thorax,'Visible','off')
-        fenetre_corr_x=[0.99*abs(maxi_pval) abs(maxi_pval)*1.01]
-        fenetre_corr_y=[0.8*maxi_val maxi_val*1.01]
-        set(axe_corr,'XLim',fenetre_corr_x,'YLim',fenetre_corr_y)
-        if a==1
-            set(scatter_corr_Select,'XData',pval_abdo(indice_abdo),'YData',r_abdo(indice_abdo),'Visible','on','MarkerFaceColor','r','LineWidth',1)
-        else
-            set(scatter_corr_Select,'XData',pval_tho(indice_tho),'YData',r_thorax(indice_tho),'Visible','on','MarkerFaceColor','b','LineWidth',1)
-        end
-        
-        axe_corr.XAxis.TickValuesMode ='auto';
-        axe_corr.YAxis.TickValuesMode ='auto';
-        close(h);
-end
-    toc
     end
-% Changement de fenetre en fonction du point (coefficient-pvalue)
-% sÃ©lectionnÃ©
+
+% Changement de fenetre de superposition des signaux Biopac et Visuresp
+% en fonction du point (coefficient-pvalue) selectionne
 
     function selection_point(indice,~)
-         h = waitbar(0,'Please wait...');
+        h = waitbar(0,'Please wait...');
+        % calcul de la fenetre associe au point
         temps_fenetre_tho=-1;
         fenetre_tho=-1;
         fenetre_abdo=-1;
@@ -797,8 +785,8 @@ end
             debut_fen_inter=pas;
             fin_fen_inter=pas+length(thorax_L_sous);
         elseif indice==length(r_abdo)
-              debut_fen_inter=(indice-2)*pas;
-                  fin_fen_inter=thorax_C(end);
+            debut_fen_inter=(indice-2)*pas;
+            fin_fen_inter=thorax_C(end);
         else
             debut_fen_inter=(indice-2)*pas;
             fin_fen_inter=(indice)*pas+length(thorax_L_sous);
@@ -807,16 +795,19 @@ end
         r_thorax_fin=0;
         r_abdo_fin=0;
         ind=1;
-
+        
+        %calcul des maximums des coefficients de correlation des signaux abdominaux
+        %et thoaciques dans cette fenetre
         for k=debut_fen_inter:1:fin_fen_inter-length(thorax_L_sous)
             val=corrcoef(thorax_L_sous,thorax_C(k:length(thorax_L_sous)+k-1));
             r_thorax_fin(ind)=val(1,2);
             val=corrcoef(abdomen_L_sous,abdomen_C(k:length(abdomen_L_sous)+k-1));
             r_abdo_fin(ind)=val(1,2);
-            
             ind=ind+1;
         end
         
+        % calcul de la fenetre presentant le maximum du coefficient de
+        % correlation
         indice_tho =find(r_thorax_fin==max(r_thorax_fin));
         max_tho=max(r_thorax_fin);
         debut_fen_tho=debut_fen_inter+indice_tho(1)-1;
@@ -828,23 +819,17 @@ end
         debut_fen_abdo=debut_fen_inter+indice_abdo(1)-1;
         fin_fen_abdo=debut_fen_abdo+length(abdomen_L_sous);
         fenetre_abdo=[debut_fen_abdo/freq_C fin_fen_abdo/freq_C-1/freq_C];
-        
         if max(r_thorax_fin)<max(r_abdo_fin)
-            debut_fen_tho=debut_fen_abdo;
-            fin_fen_tho=fin_fen_abdo;
             fenetre_tho=fenetre_abdo;
-            
         else
-            debut_fen_abdo=debut_fen_tho;
-            fin_fen_abdo=fin_fen_tho;
             fenetre_abdo=fenetre_tho;
-            
         end
         waitbar(1)
-       
+        
+        % affichage des signaux Biopacet VisuResp superposes sur la
+        % fenetre adequate
         temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
         temps_fenetre_abdo=fenetre_abdo(1,1):1/freq_C:fenetre_abdo(1,2);
-        
         set(line_signalA_Thorax_super, 'XData',temps_fenetre_tho, 'YData', (thorax_L_sous-(min(thorax_L_sous)))/(max(thorax_L_sous)-min(thorax_L_sous)))
         set(line_signalA_Abdo_super, 'XData', temps_fenetre_abdo, 'YData', (abdomen_L_sous-(min(abdomen_L_sous)))/(max(abdomen_L_sous)-min(abdomen_L_sous)))
         set(line_signalA_Thorax, 'XData', t_C, 'YData', (thorax_C-(min(thorax_C)))/(max(thorax_C)-min(thorax_C)))
@@ -857,42 +842,38 @@ end
         close(h)
     end
 
-%Valider et exporter la zone correpondant au Biopac dans le VisuResp
-
+%% Valider et exporter la zone correpondant au Biopac dans le VisuResp
     function valider_correlation(~,~)
-
-          h = waitbar(0,'Please wait...');
-
+        h = waitbar(0,'Please wait...');
+        % sur-echantillonnage de la zone VisuResp selectionnee
         t_L2=fenetre_tho(1)*freq_C:freq_C/freq_L:fenetre_tho(2)*freq_C;
-
         thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         [~, ~, extension] = fileparts(handles.filename);
-
- waitbar(0.5)
+        waitbar(0.5)
+        %creation de la structure du nouveau fichier
         if extension == '.mat'
             if isfield(fichierLabChart,'data')
                 fichier.hdr=fichierLabChart.hdr;
                 fichier.markers=fichierLabChart.markers;
-                  fichier.data(1:length(thorax_L_sur),3)=thorax_L_sur;
-            fichier.data(1:length(abdo_L_sur),2)=abdo_L_sur;
+                fichier.data(1:length(thorax_L_sur),3)=thorax_L_sur;
+                fichier.data(1:length(abdo_L_sur),2)=abdo_L_sur;
             else
-            fichier.ABDd=abdo_L_sur;
-            fichier.THOd=thorax_L_sur;
+                fichier.ABDd=abdo_L_sur;
+                fichier.THOd=thorax_L_sur;
             end
-        else extension=='.rcg'
+        else extension== '.rcg'
             fichier.data(l:length(thorax_L_sur),1)=thorax_L_sur;
             fichier.data(l:length(abdo_L_sur),2)=abdo_L_sur;
             fichier.delimiterIn_C=fichierLabChart.delimiterIn_C;
             fichier.headerlinesIn_C=fichierLabChart.headerlinesIn_C;
         end
-waitbar(0.8)
+        waitbar(0.8)
+        % creation du nouveau fichier
         s=fichier;
         handles.filename=handles.filename(1:end-4);
         save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
         close(h)
-         msgbox('Le signal de Biopac a ete remplace avec succes', 'Title', 'help')
-         
-
+        msgbox('Le signal de Biopac a ete remplace avec succes', 'Title', 'help')
     end
 end
