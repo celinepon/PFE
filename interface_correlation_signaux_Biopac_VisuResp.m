@@ -352,7 +352,7 @@ line_signalA_Abdo_super= line(0, 0, 'Color', orange, 'LineWidth', 1, 'Parent', a
 
 scatter_corr_Abdo = scatter(0,0,'r','filled', 'Marker', 'o','MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoA','Visible','off','buttondownfcn',{@button_down_function});
 scatter_corr_Thorax = scatter(0,0,'b','filled', 'Marker', 'o','MarkerFaceAlpha',0.5, 'MarkerEdgeColor', [1, 1, 1], 'Parent', axe_corr,'Tag','CoT','Visible','off','buttondownfcn',{@button_down_function});
-scatter_corr_Select = scatter(0,0,'black','filled', 'Marker', 'o', 'MarkerEdgeColor', [0, 0, 0], 'Parent', axe_corr,'Visible','off','buttondownfcn',{@button_down_function});
+scatter_corr_Select = scatter(0,0,'black','filled', 'Marker', 'o', 'MarkerEdgeColor', [0, 0, 0], 'Parent', axe_corr,'Visible','off','Tag','CoA','buttondownfcn',{@button_down_function});
 
 set([axe_signal_A_Thorax, axe_signal_A_Abdo,axe_corr], 'buttondownfcn', {@button_down_function});
 set(f, 'WindowButtonUpFcn', {@button_up_function});
@@ -401,7 +401,7 @@ maxi_val=-1;
 %visuresp, le graphe des coefficients de correlation et sur les points des
 %coefficients de correlation, apres calcul de la correlation.
     function button_down_function(obj, ~)
-        if get(obj, 'Tag')=='Tho'&intercorr_calculee
+        if get(obj,'Tag')=='Tho'&intercorr_calculee
             handles.grabbed=1;
             ps = get(gca, 'CurrentPoint');
             decal=ps(1,1);
@@ -825,7 +825,7 @@ maxi_val=-1;
             fenetre_abdo=fenetre_tho;
         end
         waitbar(1)
-        
+        fenetre_tho*freq_C
         % affichage des signaux Biopacet VisuResp superposes sur la
         % fenetre adequate
         temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);

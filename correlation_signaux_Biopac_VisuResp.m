@@ -129,7 +129,7 @@ uicontrol( ...
 % 1-pvalue
 ind_aff=find(handles.coeff>0.5*max(handles.coeff));
 figure('Name','Coefficients/1-pvalue');
-handles.scatter_corr_Select = scatter(handles.pval(indice),handles.coeff(indice),'g','filled', 'Marker', 'o','MarkerFaceAlpha', 1, 'MarkerEdgeColor', [0, 0, 0],'Visible','on','buttondownfcn',{@button_down_function,handles});
+handles.scatter_corr_Select = scatter(handles.pval(indice),handles.coeff(indice),'b','filled', 'Marker', 'o','MarkerFaceAlpha', 1, 'MarkerEdgeColor', [0, 0, 0],'Visible','on','buttondownfcn',{@button_down_function,handles});
 hold on
 scatter(handles.pval(ind_aff),handles.coeff(ind_aff),'r','filled', 'Marker', 'o','MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [1, 1, 1], 'Tag','Correlation','buttondownfcn',{@button_down_function,handles});
 end
