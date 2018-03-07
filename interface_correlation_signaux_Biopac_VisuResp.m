@@ -657,12 +657,13 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
             pval_tho=-1;
             pval_abdo=-1;
             
-            %sous-echantillonnage
+            %sur-echantillonnage
             freq_surech=freq_C;
+            length(handles.thorax_L)
             t_L2=0:1/freq_surech:(length(handles.thorax_L)/freq_L-1/freq_L);
             handles.thorax_L_sous= interp1(t_L,handles.thorax_L,t_L2,'spline');
             handles.abdomen_L_sous= interp1(t_L,handles.abdomen_L,t_L2,'spline');
-            
+            length(handles.thorax_L_sous)
             %calcul 1ere fenetre (pas de 5 pourcent)
             pas=floor(0.05*length(handles.thorax_L_sous));
             ind=1;
