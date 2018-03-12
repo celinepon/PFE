@@ -893,8 +893,8 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
         waitbar(0.8)
         % creation du nouveau fichier
         s=fichier;
-        handles.filename=handles.filename(1:end-4);
-        save(['R:\vsld\2018-pfe-polytech-TIS5\data\Visuresp','\',handles.filename,'_VisuResp.mat'], '-struct', 's')
+        [file,path] = uiputfile('*.mat','Save As');
+        save([path,'\',file], '-struct', 's')
         close(h)
         msgbox('Le signal de Biopac a ete remplace avec succes', 'Title', 'help')
     end
