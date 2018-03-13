@@ -98,7 +98,7 @@ prepertoire = uipanel( ...
     'Title', 'Repertoire', ...
     'Units', 'Pixels', ...
     'Fontsize', 9, ...
-    'Position', [850, 370, 350, 480] ...
+    'Position', [815, 370, 430, 480] ...
     );
 
 % panel des boutons de correlation
@@ -129,7 +129,7 @@ axe_signal_B_Thorax = axes( ...
     'XTick', [], ...
     'Position', [30, 25, 700, 130] ...
     );
-%temps_B_thorax = 
+%temps_B_thorax =
 uicontrol('Parent',psignalBthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
 
@@ -142,7 +142,7 @@ axe_signal_B_Abdo = axes( ...
     'XTick', [], ...
     'Position', [30, 25, 700, 130] ...
     );
-%temps_B_abdo = 
+%temps_B_abdo =
 uicontrol('Parent',psignalBabdo,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
 
@@ -156,7 +156,7 @@ axe_signal_A_Thorax = axes( ...
     'Tag','Tho',...
     'Position', [30, 25, 700, 130] ...
     );
-%temps_A_thorax = 
+%temps_A_thorax =
 uicontrol('Parent',psignalAthorax,'Style','text','FontSize',8,'String','temps (s)','Position',[735 14 60 25]);
 
 %Graphe du signal A abdomen
@@ -170,7 +170,7 @@ axe_signal_A_Abdo = axes( ...
     'Position', [30, 25, 700, 130] ...
     );
 
-%temps_A_abdo = 
+%temps_A_abdo =
 uicontrol(...
     'Parent',psignalAabdo,...
     'Style','text',...
@@ -190,7 +190,7 @@ axe_corr = axes( ...
     'Position', [40, 40, 380, 260] ...
     );
 
-%temps_corr = 
+%temps_corr =
 uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
@@ -205,27 +205,27 @@ uicontrol(...
 listedossier = uicontrol(...
     'Parent',prepertoire,...
     'Style','listbox',...
-    'Position',[23 160 300 240],...
+    'Position',[60 160 330 240],...
     'Callback',{@filelist_callback});
 
 % selectionne le dossier des fichiers Biopac
-%selectdossierBiopac = 
+%selectdossierBiopac =
 uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
     'FontSize',9,...
     'String','Selectionner un dossier Biopac',...
-    'Position',[50 415 250 40],...
+    'Position',[85 415 250 40],...
     'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
     'Callback',{@selectdir_callback});
 %selectionne le ficher VisuResp
-%selectfichierVisurep = 
+%selectfichierVisurep =
 uicontrol(...
     'Parent',prepertoire,...
     'Style','pushbutton',...
     'FontSize',9,...
     'String','Selectionner un fichier Visuresp',...
-    'Position',[50 85 250 30],...
+    'Position',[85 85 250 30],...
     'ToolTipString', 'Selectionnez un fichier de type .rcg sortant de Visuresp',...
     'Callback',{@selectfile_callback});
 % charge le signal Biopac selectionne dans le repertoire
@@ -234,8 +234,8 @@ OK = uicontrol(...
     'Style','pushbutton',...
     'FontSize',9,...
     'String','OK',...
-    'Position',[50 125 250 30],...
-    'ToolTipString', 'Selectionnez un dossier contenant des fichiers .mat sortant du Biopac',...
+    'Position',[85 125 250 30],...
+    'ToolTipString', 'Charge le fichier selectionne',...
     'enable','off',...
     'Callback',{@afficherGraph});
 % convertit le fichier Visuresp (.rcg) en fichier .mat
@@ -244,7 +244,7 @@ convertir = uicontrol(...
     'Style','pushbutton',...
     'FontSize',9,...
     'String','Conversion en .mat',...
-    'Position',[50 10 250 30],...
+    'Position',[85 10 250 30],...
     'ToolTipString', 'Convertit le fichier Visuresp (.rcg) en fichier .mat',...
     'enable','off',...
     'Callback',{@conversion_rcg2mat});
@@ -256,7 +256,7 @@ cheminfichierVisuresp = uicontrol(...
     'FontSize',12,...
     'String',' ',...
     'Position',...
-    [10 50 330 27],...
+    [45 50 330 27],...
     'BackgroundColor','w');
 % lance la recherche du maximum des coefficients de correlation
 lancercorrelation = uicontrol(...
@@ -277,7 +277,7 @@ valider = uicontrol(...
     'Position',[500 10 100 40],...
     'enable','off',...
     'ToolTipString', 'Validation de la correspondance entre les sequences Visuresp et Biopac',...
-    'Callback',{@valider_correlation}); 
+    'Callback',{@valider_correlation});
 %affiche la valeur maximum du coefficient de correlation des signaux
 %thoraciques
 %corr_thorax_text =
@@ -296,7 +296,7 @@ corr_thorax_valeur = uicontrol(...
     'Position',[120 305 50 25]);
 %affiche la valeur maximum du coefficient de correlation des signaux
 %abdominaux
-%corr_abdo_text = 
+%corr_abdo_text =
 uicontrol(...
     'Parent',pvaleur,...
     'Style','text',...
@@ -338,7 +338,7 @@ freqVisu = uicontrol(...
     'Position',[735 100 60 25],...
     'Callback',{@afficherVisurep});
 
-%freqechA = 
+%freqechA =
 uicontrol(...
     'Parent',psignalAthorax,...
     'Style','text',...
@@ -347,6 +347,16 @@ uicontrol(...
     'Position',[735 125 60 25]);
 
 
+%%%%%%%%%%%%%%%%%% Proprietes de la figure
+% Permet d'agrandir la figure en gardant les proportions
+h_fig = findobj(f, '-not', 'Units', 'normalized');
+lgt_h_fig = length(h_fig);
+for k = 1:lgt_h_fig
+    if isprop(h_fig(k), 'Units')
+        set(h_fig(k), 'Units', 'normalized')
+    end
+end
+movegui(f, 'center')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Lines
 
 
@@ -406,7 +416,7 @@ pval_abdo(1)=-1;
 pas=-1;
 maxi_pval=-1;
 maxi_val=-1;
-
+answer=[];
 
 set([axe_signal_A_Thorax, axe_signal_A_Abdo,axe_corr], 'buttondownfcn', {@button_down_function});
 set(f, 'WindowButtonUpFcn', {@button_up_function});
@@ -569,58 +579,90 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
         intercorr_calculee=0;
     end
 
-%% Affichage des signaux
+%% Affichage des signaux du Biopac
 %permet d'afficher sur les graphiques les enregistrements du signal b
 %(biopac) en appuyant sur Ok
-    function afficherGraph(~, ~)
-        handles.thorax_L=-1;
-        handles.abdomen_L=-1;
-        filename_L = [handles.dir, '\', handles.filename];
-        handles.fichierLabChart= importdata(filename_L);
-        [~, ~, extension] = fileparts(handles.filename);
-        if extension == '.mat'
-            handles.fichierLabChart=importdata(filename_L);
-            if isfield(handles.fichierLabChart,'THOd')
-                handles.thorax_L=handles.fichierLabChart.THOd(1:length(handles.fichierLabChart.THOd));
-                handles.abdomen_L=handles.fichierLabChart.ABDd(1:length(handles.fichierLabChart.ABDd));
-            elseif isfield(handles.fichierLabChart,'data')
-                handles.thorax_L=handles.fichierLabChart.data(1:length(handles.fichierLabChart.data),3);
-                handles.abdomen_L=handles.fichierLabChart.data(1:length(handles.fichierLabChart.data),4);
-            else
-                msgbox('Le contenu de ce fichier .mat n"est pas structure de facon adequate (data.data) ', 'Title', 'help')
-            end
-        elseif extension == '.rcg'
-            delimiterIn_C = '\t';
-            headerlinesIn_C = 38;
-            handles.fichierLabChart=importdata(filename_L,delimiterIn_C,headerlinesIn_C);
-            handles.thorax_L=handles.fichierLabChart.data(1:length(handles.fichierLabChart.data),1);
-            handles.abdomen_L=handles.fichierLabChart.data(1:length(handles.fichierLabChart.data),2);
-        else
-            msgbox('Le format de fichier n"est pas supporte, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+    function afficherGraph(src, ~)
+        bouton=get(src,'Style');
+        switch bouton
+            case 'pushbutton'
+                prompt = {'Entrer le chemin du signal thoracique(ex: data(:,3) ):', 'Entrer le chemin du signal abdominal(ex: data(:,4) ):'};
+                title = 'Chemin des signaux';
+                lines = 1;
+                def = {'entrez le chemin du signal thoracique','entrez le chemin du signal abdominal'};
+                answer = inputdlg(prompt, title, lines, def);
+                assignin('base', 'chemin_tho_B', answer{1});
+                assignin('base', 'chemin_abd_B', answer{2});
+                %chargement des donnees
+                handles.thorax_L=-1;
+                handles.abdomen_L=-1;
+                filename_L = [handles.dir, '\', handles.filename];
+                [~, ~, extension] = fileparts(filename_L);
+                if extension == '.mat'
+                    handles.fichierLabChart= importdata(filename_L);
+                elseif extension == '.rcg'
+                    delimiterIn_C = '\t';
+                    headerlinesIn_C = 38;
+                    handles.fichierLabChart=importdata(filename_L,delimiterIn_C,headerlinesIn_C);
+                else
+                    msgbox('Le format de fichier n"est pas supporte, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
+                end
+                if strcmp(answer{1},def{1})&strcmp(answer{2},def{2})
+                    msgbox('Un des 2 champs texte ne sont pas remplis', 'Title', 'help')
+                    return;
+                else
+                    handles.thorax_L=eval(['handles.fichierLabChart.',answer{1}]);
+                    handles.abdomen_L=eval(['handles.fichierLabChart','.',answer{2}]);
+                end
+                longueur_signal_L=length(handles.thorax_L);     
+                %affichage
+                freq_L=str2double(get(freqLab,'string'));
+                t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
+                set(line_signalB_Thorax, 'XData',  t_L, 'YData', handles.thorax_L)
+                set(line_signalB_Abdo, 'XData',  t_L, 'YData',handles.abdomen_L)
+                set(line_signalA_Abdo_super,'Visible','off')
+                set(line_signalA_Thorax_super,'Visible','off')
+                set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
+                set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
+                axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
+                axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
+                axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
+                axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
+                set(valider,'enable','off');
+                if length(handles.thorax_C)>2
+                    set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
+                    set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
+                end
+                if  length(handles.thorax_L)>2 & length(handles.thorax_C)>2
+                    set(lancercorrelation,'enable','on');
+                end
+            case 'edit'
+                %affichage
+                longueur_signal_L=length(handles.thorax_L);
+                freq_L=str2double(get(freqLab,'string'));
+                if handles.thorax_L~=-1
+                    t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
+                    set(line_signalB_Thorax, 'XData',  t_L, 'YData', handles.thorax_L)
+                    set(line_signalB_Abdo, 'XData',  t_L, 'YData',handles.abdomen_L)
+                    set(line_signalA_Abdo_super,'Visible','off')
+                    set(line_signalA_Thorax_super,'Visible','off')
+                    set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
+                    set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
+                    axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
+                    axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
+                    axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
+                    axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
+                    set(valider,'enable','off');
+                    if length(handles.thorax_C)>2
+                        set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
+                        set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
+                    end
+                    if  length(handles.thorax_L)>2 & length(handles.thorax_C)>2
+                        set(lancercorrelation,'enable','on');
+                    end
+                end
         end
-        longueur_signal_L=length(handles.thorax_L);
-        
-        %affichage
-        freq_L=str2double(get(freqLab,'string'));
-        t_L=0:1/freq_L:(longueur_signal_L/freq_L-1/freq_L);
-        set(line_signalB_Thorax, 'XData',  t_L, 'YData', handles.thorax_L)
-        set(line_signalB_Abdo, 'XData',  t_L, 'YData',handles.abdomen_L)
-        set(line_signalA_Abdo_super,'Visible','off')
-        set(line_signalA_Thorax_super,'Visible','off')
-        set(axe_signal_B_Thorax,'XLim', [min(t_L), max(t_L)])
-        set(axe_signal_B_Abdo,'XLim', [min(t_L), max(t_L)])
-        axe_signal_B_Thorax.XAxis.TickValuesMode ='auto';
-        axe_signal_B_Abdo.XAxis.TickValuesMode ='auto';
-        axe_signal_B_Thorax.YAxis.TickValuesMode ='auto';
-        axe_signal_B_Abdo.YAxis.TickValuesMode ='auto';
-        set(valider,'enable','off');
-        if length(handles.thorax_C)>2
-            set(axe_signal_A_Thorax,'XLim', [min(t_C), max(t_C)])
-            set(axe_signal_A_Abdo,'XLim', [min(t_C), max(t_C)])
-        end
-        if  length(handles.thorax_L)>2 & length(handles.thorax_C)>2
-            set(lancercorrelation,'enable','on');
-        end
+        clc
     end
 
 %permet d'afficher sur les graphiques les enregistrements du signal A
@@ -659,11 +701,9 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
             
             %sur-echantillonnage
             freq_surech=freq_C;
-            length(handles.thorax_L)
             t_L2=0:1/freq_surech:(length(handles.thorax_L)/freq_L-1/freq_L);
             handles.thorax_L_sous= interp1(t_L,handles.thorax_L,t_L2,'spline');
             handles.abdomen_L_sous= interp1(t_L,handles.abdomen_L,t_L2,'spline');
-            length(handles.thorax_L_sous)
             %calcul 1ere fenetre (pas de 5 pourcent)
             pas=floor(0.05*length(handles.thorax_L_sous));
             ind=1;
@@ -847,7 +887,6 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
             fenetre_abdo=fenetre_tho;
         end
         waitbar(1)
-        fenetre_tho*freq_C
         % affichage des signaux Biopacet VisuResp superposes sur la
         % fenetre adequate
         temps_fenetre_tho=fenetre_tho(1,1):1/freq_C:fenetre_tho(1,2);
@@ -870,23 +909,19 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
         % sur-echantillonnage de la zone VisuResp selectionnee
         t_L2=fenetre_tho(1)*freq_C:freq_C/freq_L:fenetre_tho(2)*freq_C;
         handles.thorax_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,handles.thorax_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
-        abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,handles.abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
+        handles.abdo_L_sur= interp1(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C,handles.abdomen_C(fenetre_tho(1)*freq_C:1:fenetre_tho(2)*freq_C),t_L2,'spline');
         [~, ~, extension] = fileparts(handles.filename);
         waitbar(0.5)
         %creation de la structure du nouveau fichier
         if extension == '.mat'
-            if isfield(handles.fichierLabChart,'data')
-                fichier.hdr=handles.fichierLabChart.hdr;
-                fichier.markers=handles.fichierLabChart.markers;
-                fichier.data(1:length(handles.thorax_L_sur),3)=handles.thorax_L_sur;
-                fichier.data(1:length(abdo_L_sur),2)=abdo_L_sur;
-            else
-                fichier.ABDd=abdo_L_sur;
-                fichier.THOd=handles.thorax_L_sur;
-            end
+            fichier=handles.fichierLabChart;
+            fichier.THOd=[];
+            fichier.ABDd=[];
+            fichier.THOd=handles.thorax_L_sur;
+            fichier.ABDd=handles.abdo_L_sur;
         else extension== '.rcg'
             fichier.data(l:length(handles.thorax_L_sur),1)=handles.thorax_L_sur;
-            fichier.data(l:length(abdo_L_sur),2)=abdo_L_sur;
+            fichier.data(l:length(abdo_L_sur),2)=handles.abdo_L_sur;
             fichier.delimiterIn_C=handles.fichierLabChart.delimiterIn_C;
             fichier.headerlinesIn_C=handles.fichierLabChart.headerlinesIn_C;
         end
@@ -900,69 +935,69 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
     end
 
 %% Conversion des fichiers .rcg en .mat
-function conversion_rcg2mat(~,~)
-nom_fichier=handles.chemin(1:end-4);
-fig1=figure('position',[800 500 300 300]);
-
-% creation de l'interface de selection des donnees a convertir
-uicontrol(...
-    'Parent',fig1,...
-    'Style','text',...
-    'FontSize',10,...
-    'String','Sélectionnez les données que vous souhaitez convertir :',...
-    'Position',...
-    [0 260 280 40]);
-
-thorax_box=uicontrol('style','checkbox','string','Thorax','FontSize',12, 'Position',[50 210 250 30]);
-abdomen_box=uicontrol('style','checkbox','string','Abdomen','FontSize',12, 'Position',[50 170 250 30]);
-volume_box=uicontrol('style','checkbox','string','Volume','FontSize',12, 'Position',[50 130 250 30]);
-debit_box=uicontrol('style','checkbox','string','Debit','FontSize',12, 'Position',[50 90 250 30]);
-
-uicontrol(...
-    'Parent',fig1,...
-    'Style','pushbutton',...
-    'FontSize',9,...
-    'String','Conversion en .mat',...
-    'Position',[30 20 120 30],...
-    'ToolTipString', 'Convertit le fichier Visuresp (.rcg) en fichier .mat',...
-    'enable','on',...
-    'Callback',{@conversion2});
-uicontrol(...
-    'Parent',fig1,...
-    'Style','pushbutton',...
-    'FontSize',9,...
-    'String','Annuler',...
-    'Position',[170 20 80 30],...
-    'ToolTipString', 'Convertit le fichier Visuresp (.rcg) en fichier .mat',...
-    'enable','on',...
-    'Callback',{@annuler});
-
+    function conversion_rcg2mat(~,~)
+        nom_fichier=handles.chemin(1:end-4);
+        fig1=figure('position',[800 500 300 300]);
+        
+        % creation de l'interface de selection des donnees a convertir
+        uicontrol(...
+            'Parent',fig1,...
+            'Style','text',...
+            'FontSize',10,...
+            'String','Sélectionnez les données que vous souhaitez convertir :',...
+            'Position',...
+            [0 260 280 40]);
+        
+        thorax_box=uicontrol('style','checkbox','string','Thorax','FontSize',12, 'Position',[50 210 250 30]);
+        abdomen_box=uicontrol('style','checkbox','string','Abdomen','FontSize',12, 'Position',[50 170 250 30]);
+        volume_box=uicontrol('style','checkbox','string','Volume','FontSize',12, 'Position',[50 130 250 30]);
+        debit_box=uicontrol('style','checkbox','string','Debit','FontSize',12, 'Position',[50 90 250 30]);
+        
+        uicontrol(...
+            'Parent',fig1,...
+            'Style','pushbutton',...
+            'FontSize',9,...
+            'String','Conversion en .mat',...
+            'Position',[30 20 120 30],...
+            'ToolTipString', 'Convertit le fichier Visuresp (.rcg) en fichier .mat',...
+            'enable','on',...
+            'Callback',{@conversion2});
+        uicontrol(...
+            'Parent',fig1,...
+            'Style','pushbutton',...
+            'FontSize',9,...
+            'String','Annuler',...
+            'Position',[170 20 80 30],...
+            'ToolTipString', 'Annule la conversion',...
+            'enable','on',...
+            'Callback',{@annuler});
+        
+        %conversion du fichier .rcg en .mat
+        function conversion2 (~,~)
+            THO=handles.thorax_C;
+            ABD=handles.abdomen_C;
+            VolRecBrut=handles.volume_C;
+            DebRec=handles.debit_C;
+            if get(thorax_box,'Value')==1
+                THO=handles.thorax_C;  else THO=0; end
+            if get(abdomen_box,'Value')==1
+                ABD=handles.abdomen_C;  else ABD=0; end
+            if get(volume_box,'Value')==1
+                VolRecBrut=handles.volume_C;  else VolRecBrut=0; end
+            if get(debit_box,'Value')==1
+                DebRec=handles.debit_C;  else DebRec=0; end
+            
+            if THO==0&ABD==0&VolRecBrut==0&DebRec==0
+                msgbox('Aucune donnée n a ete selectionnee', 'Title', 'help')
+            else
+                nom_fichier=handles.chemin(1:end-4);
+                save([nom_fichier,'.mat'],'THO','ABD','VolRecBrut','DebRec')
+                close
+                msgbox('Le signal a ete convertit avec succes', 'Title', 'help')
+            end
+        end
+    end
     function annuler(~,~)
         close
     end
-
-    function conversion2 (~,~)    
-        THO=handles.thorax_C;
-        ABD=handles.abdomen_C;
-        VolRecBrut=handles.volume_C;
-        DebRec=handles.debit_C;
-        if get(thorax_box,'Value')==1
-            THO=handles.thorax_C;  else THO=0; end
-        if get(abdomen_box,'Value')==1
-            ABD=handles.abdomen_C;  else ABD=0; end
-        if get(volume_box,'Value')==1
-            VolRecBrut=handles.volume_C;  else VolRecBrut=0; end
-        if get(debit_box,'Value')==1
-            DebRec=handles.debit_C;  else DebRec=0; end
-        
-        if THO==0&ABD==0&VolRecBrut==0&DebRec==0
-                msgbox('Aucune donnée n a ete selectionnee', 'Title', 'help')
-        else
-        nom_fichier=handles.chemin(1:end-4);
-        save([nom_fichier,'.mat'],'THO','ABD','VolRecBrut','DebRec')
-        close
-        msgbox('Le signal a ete convertit avec succes', 'Title', 'help')
-        end
-    end
-end
 end
