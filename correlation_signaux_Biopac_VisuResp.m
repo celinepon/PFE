@@ -4,9 +4,9 @@
 
 function correlation_signaux_Biopac_VisuResp(signalB,signalA,freqB,freqA)
 % DONNNEES ENTREE
-% signalB = vecteur colonne de valeurs
+% signalB = vecteur colonne de valeurs, en .mat
 % signalA = vecteur colonne de valeurs, de taille superieure a la taille du
-% signalB
+% signalB, en .mat
 % freqB = frequence d'echantillonnage du signalB
 % freqA = frequence d'echantillonnage du signalA
 %
@@ -29,17 +29,21 @@ function correlation_signaux_Biopac_VisuResp(signalB,signalA,freqB,freqA)
 % dans la partie 1, en fonction des 1-pvalue associer. La selection d'un de ces points
 % entraine le changement de fenetrage du signalA affiche.
 
+% Auteurs: Camille Chadenat, Céline Ponsdesserre, 16/03/2018
+
 h = waitbar(0,'Please wait...');
-handles.chemin_nom_signalB='R:\vsld\2018-pfe-polytech-TIS5\c2_0005_RIP_Fe100Hz.mat';
-handles.chemin_nom_signalA='R:\vsld\2018-pfe-polytech-TIS5\C2_17_05_2016_SSET.mat';
+% a modifier
+handles.chemin_nom_signalB='R:\vsld\2018-pfe-polytech-TIS5\data\2016-HOOMIJ\BIOPAC\C2\c2_0005_RIP_Fe100Hz.mat';
+handles.chemin_nom_signalA='R:\vsld\2018-pfe-polytech-TIS5\data\2016-HOOMIJ\VISURESP\C2_17_05_2016.mat';
 handles.signalB=importdata(handles.chemin_nom_signalB);
 handles.signalA=importdata(handles.chemin_nom_signalA);
-handles.signalB=handles.signalB.ABDd;
-handles.signalA=handles.signalA.ABD;
+handles.signalB=handles.signalB.THOd;
+handles.signalA=handles.signalA.THO;
 
 
-handles.freqB=100;
-handles.freqA=40;
+handles.freqB=100; %a modifier
+handles.freqA=40;  %a modifier
+
 handles.coeff=0;
 handles.fenetre=0;
 handles.pval=-1;
