@@ -24,6 +24,8 @@ clc
 % dans la partie 1, en fonction des 1-pvalue associée. La selection d'un de ces points
 % entraine le changement de fenetrage du signalA affiche.
 
+% Auteurs: Camille Chadenat, Céline Ponsdesserre, 16/03/2018
+
 %% Cree l'interface utilsateur
 scrn_size = get(0, 'ScreenSize');
 xmiddle = scrn_size(3) / 2;
@@ -502,20 +504,18 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
 
 %% Selection du dossier contenant les enregistrements Biopac
     function selectdir_callback(~,~)
-        dir_name = uigetdir('','Selectionner un dossier de fichier .mat ou .rcg');
+        dir_name = uigetdir('','Selectionner un dossier de fichier .mat');
         if dir_name ~= 0
             handles.dir = dir_name;
             search_name = [dir_name,'/*.mat'];
-            search_name2=[dir_name,'/*.rcg'] ;
             files = struct2cell(dir(search_name));
-            files2=struct2cell(dir(search_name2));
-            handles.file_list = [files(1,:),files2(1,:)]';
+            handles.file_list = files(1,:)';
             if length(handles.file_list)~=0
                 set(listedossier,'String', handles.file_list);
                 handles.filename = char(handles.file_list(1));
                 set(OK,'Enable','on')
             else
-                msgbox('Le dossier selectionne ne contient pas de fichier .mat ou .rcg', 'Title', 'help')
+                msgbox('Le dossier selectionne ne contient pas de fichier .mat', 'Title', 'help')
             end
         end
         intercorr_calculee=0;
@@ -608,12 +608,16 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
                         msgbox('Le format de fichier n"est pas supporte, utiliser des fichiers .mat ou .rcg', 'Title', 'help')
                     end
                     
-                    if strcmp(answer{1},def{1})&strcmp(answer{2},def{2})
+                    if strcmp(answer{1},def{1})|strcmp(answer{2},def{2})
                         msgbox('Un des 2 champs texte n"est pas remplis', 'Title', 'help')
                         return;
-                    else
-                        handles.thorax_L=eval(['handles.fichierLabChart.',answer{1}]);
-                        handles.abdomen_L=eval(['handles.fichierLabChart','.',answer{2}]);
+                    else try
+                            handles.thorax_L=eval(['handles.fichierLabChart.',answer{1}]);
+                            handles.abdomen_L=eval(['handles.fichierLabChart','.',answer{2}]);         
+                        catch 
+                            msgbox('Le chemin est incorrect.', 'Title', 'help')
+                            return;
+                        end
                     end
                     longueur_signal_L=length(handles.thorax_L);     
                     %affichage
@@ -960,7 +964,7 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
         if extension == '.mat'
             fichier.THOd=handles.thorax_L_sur;
             fichier.ABDd=handles.abdo_L_sur;
-         %    fichier.DebRec=handles.fichierLabChart.data(:,5); %            a mettre pour extraire les fichiers calibration
+           fichier.DebRec=handles.fichierLabChart.data(:,6); %            a mettre pour extraire les fichiers calibration
 
         else extension== '.rcg'
             fichier.data(l:length(handles.thorax_L_sur),1)=handles.thorax_L_sur;
@@ -1036,10 +1040,21 @@ set(f, 'WindowButtonMotionFcn', {@button_motion_function});
             if THO==0&ABD==0&VolRecBrut==0&DebRec==0
                 msgbox('Aucune donnée n a ete selectionnee', 'Title', 'help')
             else
-                nom_fichier=handles.chemin(1:end-4);
-                save([nom_fichier,'.mat'],'THO','ABD','VolRecBrut','DebRec')
+                s.THO=THO;
+                s.ABD=ABD;
+                s.VolRecBrut=VolRecBrut;
+                s.DebRec=DebRec;
+                [file,path] = uiputfile('*.mat','Save As');
+                if length(path)~=1
+                    save([path,'\',file], '-struct', 's')
+                    msgbox('Le signal a ete convertit avec succes', 'Title', 'help')
+                end
+                clc
                 close
-                msgbox('Le signal a ete convertit avec succes', 'Title', 'help')
+%                 nom_fichier=handles.chemin(1:end-4);
+%                 save([nom_fichier,'.mat'],'THO','ABD','VolRecBrut','DebRec')
+%                 close
+%                 msgbox('Le signal a ete convertit avec succes', 'Title', 'help')
             end
         end
     end
